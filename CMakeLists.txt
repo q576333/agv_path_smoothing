@@ -20,7 +20,7 @@ include_directories(
  ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(path_viewer test/path_viewer.cpp)
+add_executable(path_viewer test/path_viewer.cpp src/Curve_common.cpp)
 
 target_link_libraries(path_viewer
    ${catkin_LIBRARIES}

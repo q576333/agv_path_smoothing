@@ -1,6 +1,7 @@
-#include "agv_path_smoothing/Curve_common.h";
+#include "agv_path_smoothing/Curve_common.h"
 
 #include "geometry_msgs/PoseStamped.h"
+#include <geometry_msgs/Point.h>
 
 Curve_common::Curve_common()
 {
@@ -16,7 +17,6 @@ nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::Point start_point, geo
     int segment = 1 / t_intervel;
     double line_parameter = 0;
 
-    
     for(int i = 0; i < segment; i++)
     {
         current_pose.header.seq = i;
