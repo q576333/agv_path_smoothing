@@ -1,0 +1,10 @@
+<launch>
+<!-- path viewer -->
+  <node pkg="agv_path_smoothing" name="path_viewer" type="path_viewer" output="screen">
+    <param name="start_point_x" value="-1"/> 
+    <param name="start_point_y" value="-2"/> 
+    <param name="goal_point_x" value="2"/> 
+    <param name="goal_point_y" value="3"/> 
+  </node>
+
+</launch>
