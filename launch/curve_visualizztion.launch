@@ -4,7 +4,7 @@
     <param name="start_point_x" value="-1"/> 
     <param name="start_point_y" value="-2"/> 
     <param name="goal_point_x" value="2"/> 
-    <param name="goal_point_y" value="3"/> 
+    <param name="goal_point_y" value="5"/> 
   </node>
 
 </launch>

@@ -9,7 +9,7 @@ Curve_common::Curve_common()
 
 }
 
-nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::PoseStamped start_point, geometry_msgs::PoseStamped end_point, double t_intervel)
+nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::Point start_point, geometry_msgs::Point end_point, double t_intervel)
 {
     nav_msgs::Path line_result;
     geometry_msgs::PoseStamped current_pose;
@@ -26,8 +26,8 @@ nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::PoseStamped start_poin
     {
         current_pose.header.seq = i;
         current_pose.header.stamp = ros::Time::now();
-        current_pose.pose.position.x = start_point.pose.position.x * (1 - line_parameter) + end_point.pose.position.x * (line_parameter);
-        current_pose.pose.position.y = start_point.pose.position.y * (1 - line_parameter) + end_point.pose.position.y * (line_parameter);
+        current_pose.pose.position.x = start_point.x * (1 - line_parameter) + end_point.x * (line_parameter);
+        current_pose.pose.position.y = start_point.y * (1 - line_parameter) + end_point.y * (line_parameter);
 
         line_result.poses.push_back(current_pose);
         line_parameter += t_intervel;
