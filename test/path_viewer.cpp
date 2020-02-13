@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
 #include <visualization_msgs/Marker.h>
+#include <Eigen/Eigen>
 
 #include "agv_path_smoothing/Curve_common.h"
 
@@ -14,6 +15,8 @@ int main(int argc, char **argv)
     double goal_x = 0;
     double goal_y = 0;
     double t_intervel = 0.001;
+    Eigen::Vector2d a(-1, -1);
+    Eigen::Vector2d b(5, 1);
 
     private_nh.param("start_point_x", start_x, -3.0);
     private_nh.param("start_point_y", start_y, -2.0);
@@ -63,6 +66,8 @@ int main(int argc, char **argv)
         pub_discreate_maker.publish(points);
         pub.publish(myCurve);
         ROS_INFO("end publish");
+
+        std::cout << "Eigen add result : " << a + b << "\n";
 
         ros::spin();        
     }

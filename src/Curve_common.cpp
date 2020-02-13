@@ -36,3 +36,8 @@ nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::Point start_point, geo
     std::cout << "end cacluation" << "\n";
     return line_result;
 }
+
+nav_msgs::Path Curve_common::Generate_BezierCurve(geometry_msgs::Point control_point, double t_intervel)
+{
+
+}
