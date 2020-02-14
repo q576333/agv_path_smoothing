@@ -1,4 +1,5 @@
 <launch>
+  <rosparam param="control_point" > [-12, -6, -7, 0, 1, 10, 8, -2]</rosparam>
 <!-- path viewer -->
   <node pkg="agv_path_smoothing" name="path_viewer" type="path_viewer" output="screen">
     <param name="start_point_x" value="-1"/> 

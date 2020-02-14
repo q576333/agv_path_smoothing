@@ -1,7 +1,4 @@
 #include <ros/ros.h>
-#include <nav_msgs/Path.h>
-#include <visualization_msgs/Marker.h>
-#include <Eigen/Eigen>
 
 #include "agv_path_smoothing/Curve_common.h"
 
@@ -14,9 +11,7 @@ int main(int argc, char **argv)
     double start_y = 0;
     double goal_x = 0;
     double goal_y = 0;
-    double t_intervel = 0.001;
-    Eigen::Vector2d a(-1, -1);
-    Eigen::Vector2d b(5, 1);
+    double t_intervel = 0.01;
 
     private_nh.param("start_point_x", start_x, -3.0);
     private_nh.param("start_point_y", start_y, -2.0);
@@ -30,8 +25,12 @@ int main(int argc, char **argv)
     geometry_msgs::Point start;
     geometry_msgs::Point goal;
     visualization_msgs::Marker points;
+    std::vector<double> input_control_point;
+    EigenTrajectoryPoint::Vector control_point;
 
     Curve_common CurveDesign;
+
+    private_nh.getParam("/control_point", input_control_point);
 
     while(ros::ok())
     {
@@ -47,15 +46,18 @@ int main(int argc, char **argv)
         points.color.r = 1; //red
         points.color.a = 1;
 
-        start.x = start_x;
-        start.y = start_y;
-        points.points.push_back(start);
+        // start.x = start_x;
+        // start.y = start_y;
+        // points.points.push_back(start);
 
-        goal.x = goal_x;
-        goal.y = goal_y;
-        points.points.push_back(goal);
+        // goal.x = goal_x;
+        // goal.y = goal_y;
+        // points.points.push_back(goal);
+        CurveDesign.ReadControlPointFromLaunch(&control_point, input_control_point);
+        CurveDesign.ShowControlPoint(&points, control_point);
 
-        myCurve = CurveDesign.Generate_Line(start, goal, t_intervel);
+        //myCurve = CurveDesign.Generate_Line(start, goal, t_intervel);
+        myCurve = CurveDesign.Generate_BezierCurve(control_point, t_intervel);
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0)
         {
@@ -66,8 +68,6 @@ int main(int argc, char **argv)
         pub_discreate_maker.publish(points);
         pub.publish(myCurve);
         ROS_INFO("end publish");
-
-        std::cout << "Eigen add result : " << a + b << "\n";
 
         ros::spin();        
     }
