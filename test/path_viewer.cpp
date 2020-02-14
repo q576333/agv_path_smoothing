@@ -53,8 +53,8 @@ int main(int argc, char **argv)
         // goal.x = goal_x;
         // goal.y = goal_y;
         // points.points.push_back(goal);
-        CurveDesign.ReadControlPointFromLaunch(&control_point, input_control_point);
-        CurveDesign.ShowControlPoint(&points, control_point);
+        CurveDesign.ReadDiscreate2DPointFromLaunch(&control_point, input_control_point);
+        CurveDesign.ShowDiscreatePoint(&points, control_point);
 
         //myCurve = CurveDesign.Generate_Line(start, goal, t_intervel);
         myCurve = CurveDesign.Generate_BezierCurve(control_point, t_intervel);

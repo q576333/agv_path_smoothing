@@ -76,25 +76,25 @@ nav_msgs::Path Curve_common::Generate_BezierCurve(EigenTrajectoryPoint::Vector c
     return bezier_curve_result;
 }
 
-void Curve_common::ReadControlPointFromLaunch(EigenTrajectoryPoint::Vector *input_control_point, std::vector<double> input_point)
+void Curve_common::ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point)
 {
     int index = 0;
     Eigen::Vector3d read_point;
-    EigenTrajectoryPoint dis_control_point;
-    input_control_point->reserve(input_point.size() / 2);
+    EigenTrajectoryPoint eigen_discreate_point;
+    input_point->reserve(file_discreate_point.size() / 2);
 
-    for(int i = 0; i < input_point.size(); i++)
+    for(int i = 0; i < file_discreate_point.size(); i++)
     {
         if(i % 2 == 0)
         {
-            read_point(0) = input_point[i];
+            read_point(0) = file_discreate_point[i];
         }
         else
         {
-            read_point(1) = input_point[i];
-            dis_control_point.position = read_point;
-            //input_control_point->emplace_back(dis_control_point); //I don't know why have error
-            input_control_point->push_back(dis_control_point);         
+            read_point(1) = file_discreate_point[i];
+            eigen_discreate_point.position = read_point;
+            //input_point->emplace_back(dis_control_point); //I don't know why have error
+            input_point->push_back(eigen_discreate_point);         
             index++;
         }        
     }
@@ -108,13 +108,13 @@ void Curve_common::ReadControlPointFromLaunch(EigenTrajectoryPoint::Vector *inpu
     // }
 }
 
-void Curve_common::ShowControlPoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector input_control_point)
+void Curve_common::ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point)
 {
     geometry_msgs::Point view_point;
-    for(int i = 0; i < input_control_point.size(); i++)
+    for(int i = 0; i < discreate_point.size(); i++)
     {
-        view_point.x = input_control_point.at(i).position(0);
-        view_point.y = input_control_point.at(i).position(1);
+        view_point.x = discreate_point.at(i).position(0);
+        view_point.y = discreate_point.at(i).position(1);
         points->points.push_back(view_point);
     }
 }

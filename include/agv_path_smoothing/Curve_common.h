@@ -2,8 +2,8 @@
 #define AGV_PATH_SMOOTHING_CURVE_COMMON_H_
 
 #include <Eigen/Eigen>
-#include <deque>
-#include <iostream>
+// #include <deque>
+// #include <iostream>
 
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Point.h>
@@ -22,8 +22,8 @@ class Curve_common
         Curve_common();
         nav_msgs::Path Generate_Line(geometry_msgs::Point start_point, geometry_msgs::Point end_point, double t_intervel);
         nav_msgs::Path Generate_BezierCurve(EigenTrajectoryPoint::Vector control_point, double t_intervel);
-        void ReadControlPointFromLaunch(EigenTrajectoryPoint::Vector *input_control_point, std::vector<double> input_point);
-        void ShowControlPoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector input_control_point);
+        void ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point);
+        void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);
     private:
 };
 
