@@ -1,0 +1,9 @@
+<launch>
+  <rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam>
+  <rosparam param="knot_vector" > [0, 0, 0, 0.204, 0.381, 0.550, 0.755, 1, 1, 1]</rosparam>
+
+<!-- path viewer -->
+  <node pkg="agv_path_smoothing" name="path_viewer_spline" type="path_viewer_spline" output="screen">
+  </node>
+
+</launch>

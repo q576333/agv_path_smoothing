@@ -2,12 +2,41 @@
 #define AGV_PATH_SMOOTHING_CURVE_COMMON_H_
 
 #include <Eigen/Eigen>
+//#include <vector>
 // #include <deque>
 // #include <iostream>
 
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
+
+// typedef enum DiscreateParameterMethod
+// {
+//     Average,
+//     Chord,
+//     Centripetal,
+// }dis_u_method;
+
+// typedef enum KnotVectorMethod
+// {
+//     Average,
+//     Chord,
+// }knotvector_method;
+
+struct Spline_Inf
+{
+    int order;
+    std::vector<double> knot_vector;
+    std::vector<double> weight;
+    //std::vector<double> N;
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > N;
+    //Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> N; //bsaic function
+    //Eigen::Matrix<std::vector<double>, Eigen::Dynamic, Eigen::Dynamic> N;
+    
+};
 
 struct EigenTrajectoryPoint
 {
@@ -22,8 +51,12 @@ class Curve_common
         Curve_common();
         nav_msgs::Path Generate_Line(geometry_msgs::Point start_point, geometry_msgs::Point end_point, double t_intervel);
         nav_msgs::Path Generate_BezierCurve(EigenTrajectoryPoint::Vector control_point, double t_intervel);
+        nav_msgs::Path Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel);
+        void ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d> control_point, std::vector<double> knot_vector);
         void ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point);
+        void ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d> *input_point, std::vector<double> file_discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);
+        void ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d> discreate_point);
     private:
 };
 

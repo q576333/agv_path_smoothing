@@ -33,3 +33,9 @@ target_link_libraries(path_viewer
    ${catkin_LIBRARIES}
 )
 
+add_executable(path_viewer_spline test/path_viewer_spline.cpp src/Curve_common.cpp)
+
+target_link_libraries(path_viewer_spline
+   ${catkin_LIBRARIES}
+)
+
