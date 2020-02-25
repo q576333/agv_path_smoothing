@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(agv_path_smoothing)
 
+add_compile_options(-std=c++11)
+
 find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     nav_msgs
@@ -39,3 +41,8 @@ target_link_libraries(path_viewer_spline
    ${catkin_LIBRARIES}
 )
 
+add_executable(curve_fitting_viewer test/curve_fitting_viewer.cpp src/Curve_common.cpp src/Curve_fitting.cpp)
+
+target_link_libraries(curve_fitting_viewer
+   ${catkin_LIBRARIES}
+)

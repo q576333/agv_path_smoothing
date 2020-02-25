@@ -72,7 +72,7 @@ nav_msgs::Path Curve_common::Generate_BezierCurve(EigenTrajectoryPoint::Vector c
         curve_parameter += t_intervel;
     }
 
-    std::cout << "End cacluation" << "\n";
+    std::cout << "End calculate Bezier Curve" << "\n";
     return bezier_curve_result;
 }
 
@@ -108,7 +108,7 @@ void Curve_common::ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *
     // }
 }
 
-void Curve_common::ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d> *input_point, std::vector<double> file_discreate_point)
+void Curve_common::ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > *input_point, std::vector<double> file_discreate_point)
 {
     Eigen::Vector3d read_point;
     input_point->reserve(file_discreate_point.size() / 2);
@@ -146,7 +146,7 @@ void Curve_common::ShowDiscreatePoint(visualization_msgs::Marker *points, EigenT
     }
 }
 
-void Curve_common::ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d> discreate_point)
+void Curve_common::ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point)
 {
     geometry_msgs::Point view_point;
     for(int i = 0; i < discreate_point.size(); i++)
@@ -157,7 +157,7 @@ void Curve_common::ShowDiscreatePoint(visualization_msgs::Marker *points, std::v
     }
 }
 
-void Curve_common::ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d> control_point, std::vector<double> knot_vector)
+void Curve_common::ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point, std::vector<double> knot_vector)
 {
     bspline_inf->order = order;
     bspline_inf->knot_vector.assign(knot_vector.begin(), knot_vector.end());
@@ -187,9 +187,11 @@ nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, doubl
     current_pose.header.frame_id = "odom";
 
     int p_degree = bspline_inf.order - 1;
+    int n = bspline_inf.control_point.size() - 1;
     //TODO: Check knot vector size and sequence is correect
     int m = bspline_inf.knot_vector.size() - 1; //The last knot vector index number
     int segment = 1 / t_intervel;
+    double delta_t = 100;
     double curve_parameter = 0;
     double left_denom = 0, right_denom = 0;
     double left_term = 0, right_term = 0;
@@ -198,35 +200,112 @@ nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, doubl
     Eigen::VectorXd temp_basic_function;
     std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > temp_basic_function_eigen;
 
+    //Debug use
+    // for(int i = 0; i < bspline_inf.knot_vector.size(); i++)
+    // {
+    //     std::cout << "knot vector x : " << bspline_inf.knot_vector.at(i) << "\n";    
+    // }
+
+    // std::cout << "input control point size : " << bspline_inf.control_point.size() << "\n";
+    // for(int i = 0; i < bspline_inf.control_point.size(); i++)
+    // {
+    //     std::cout << "control point x : " << bspline_inf.control_point.at(i)(0) << ", y = " << bspline_inf.control_point.at(i)(1) << "\n";
+    // }
+
+    //TODO: Can optimal this part code
+    delta_t = 1 / (double)(segment - 1);
     curve_parameter_vec.resize(segment);
     for(int u = 0; u < segment; u++)
     {
         curve_parameter_vec[u] = curve_parameter;
-        curve_parameter += t_intervel;
-        std::cout << "u index : " << u << ", value : " << curve_parameter_vec[u] << "\n";
+        curve_parameter += delta_t;
     }
 
+    bspline_inf.N.clear();
     temp_basic_function.resize(segment);
+
+    //TODO: Check basic function boundary is correct
+    //Calculate degree = 0's basic function
     for(int i = 0; i < m; i++)
-    {
-        for(int u = 0; u < segment; u++)
+    {        
+        if(bspline_inf.knot_vector.at(i) != bspline_inf.knot_vector.at(n))
         {
-            if(bspline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] < bspline_inf.knot_vector.at(i+1))                        
-                temp_basic_function(u) = 1;
-            else
-                temp_basic_function(u) = 0;
+            for(int u = 0; u < segment; u++)
+            {
+                if(bspline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] < bspline_inf.knot_vector.at(i+1))                        
+                    temp_basic_function(u) = 1;
+                else
+                    temp_basic_function(u) = 0;
+
+                //std::cout << "small temp basic function index : " << u << " small temp basic function value : " << temp_basic_function(u) << "\n";
+                //std::cout << "small temp basic function value : " << temp_basic_function(u) << "\n";
+            }
         }
+        else
+        {
+            for(int u = 0; u < segment; u++)
+            {
+                if(bspline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] <= bspline_inf.knot_vector.at(i+1))                        
+                    temp_basic_function(u) = 1;
+                else
+                    temp_basic_function(u) = 0;
+
+                //std::cout << "temp basic function index : " << u << "temp basic function value : " << temp_basic_function(u) << "\n";
+                //std::cout << "small temp basic function value : " << temp_basic_function(u) << "\n";
+            }
+        }
+        
+
+        // if(bspline_inf.knot_vector.at(i) < bspline_inf.knot_vector.at(i+1))
+        // {
+        //     if(bspline_inf.knot_vector.at(i) != bspline_inf.knot_vector.at(n))
+        //     {
+        //         for(int u = 0; u < segment; u++)
+        //         {
+        //             if(bspline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] < bspline_inf.knot_vector.at(i+1))                        
+        //                 temp_basic_function(u) = 1;
+        //             else
+        //                 temp_basic_function(u) = 0;
+
+        //             std::cout << "small temp basic function index : " << u << "   small temp basic function value : " << temp_basic_function(u) << "\n";
+        //         }
+        //     }
+        //     else
+        //     {
+        //         for(int u = 0; u < segment; u++)
+        //         {
+        //             if(bspline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] <= bspline_inf.knot_vector.at(i+1))                        
+        //                 temp_basic_function(u) = 1;
+        //             else
+        //                 temp_basic_function(u) = 0;
+
+        //             std::cout << "n basic function index : " << u << "  n basic function value : " << temp_basic_function(u) << "\n";
+        //             //std::cout << "small temp basic function value : " << temp_basic_function(u) << "\n";
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     for(int u = 0; u < segment; u++)
+        //     {
+        //         if(bspline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] <= bspline_inf.knot_vector.at(i+1))                        
+        //             temp_basic_function(u) = 1;
+        //         else
+        //             temp_basic_function(u) = 0;
+
+        //         std::cout << "temp basic function index : " << u << "   temp basic function value : " << temp_basic_function(u) << "\n";
+        //     }
+        // }
         bspline_inf.N.push_back(temp_basic_function);   
+        //std::cout << i << "'s bspline_inf Ni,0 size " << temp_basic_function.size() << "\n";
     }
 
+    //Calculate the rest of basic function
     for(int p = 1; p <= p_degree; p++)
     {
         temp_basic_function_eigen.clear();
-        std::cout << "Ni,p start at p : " << p << "\n";
         for(int i = 0; i < (m - p); i++)
         {
-            std::cout << "Ni,p start at i : " << i << "\n";
-            std::cout << "bspline_inf.N size " << bspline_inf.N.size() << "\n";
             for(int u = 0; u < segment; u++)
             {
                 left_denom = bspline_inf.knot_vector.at(p+i) - bspline_inf.knot_vector.at(i);
@@ -249,24 +328,25 @@ nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, doubl
         bspline_inf.N = temp_basic_function_eigen;
     }
 
-    std::cout << "End bsaic cacluation" << "\n";   
-
     for(int u = 0; u < segment; u++)
     {   
+        sum_x = 0;
+        sum_y = 0;
         for(int i = 0; i < bspline_inf.N.size(); i++)
         { 
             sum_x += bspline_inf.control_point.at(i)(0) * bspline_inf.N.at(i)(u);
             sum_y += bspline_inf.control_point.at(i)(1) * bspline_inf.N.at(i)(u);  
+            //std::cout << i << "'s ," << u <<"'s bspline_inf value : " << bspline_inf.N.at(i)(u) << "\n";
         }
+        std::cout << u << "'s current_pose x : " << sum_x << "\n";
+        std::cout << u << "'s current_pose y : " << sum_y << "\n";
         current_pose.header.seq = u;
         current_pose.header.stamp = ros::Time::now();
         current_pose.pose.position.x = sum_x;
         current_pose.pose.position.y = sum_y;
-        bspline_curve_result.poses.push_back(current_pose);
-        sum_x = 0;
-        sum_y = 0;
+        bspline_curve_result.poses.push_back(current_pose);        
     }
 
-    std::cout << "End cacluation" << "\n";
+    std::cout << "End calculate bspline function" << "\n";
     return bspline_curve_result;
 }

@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     std::vector<double> input_control_point;
     std::vector<double> input_knot_vector;
     Spline_Inf input_spline_inf;
-    std::vector<Eigen::Vector3d> control_point;
+    std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point;
 
     Curve_common CurveDesign;
 
