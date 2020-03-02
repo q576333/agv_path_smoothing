@@ -18,7 +18,7 @@ find_package(Eigen3 REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES agv_path_smoothing
+  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp std_msgs
 #  DEPENDS system_lib
 )
@@ -27,6 +27,11 @@ include_directories(
  include
  ${catkin_INCLUDE_DIRS}
  ${EIGEN3_INCLUDE_DIR}
+)
+
+add_library(${PROJECT_NAME}
+   src/Curve_common.cpp
+   src/Curve_fitting.cpp
 )
 
 add_executable(path_viewer test/path_viewer.cpp src/Curve_common.cpp)
@@ -46,3 +51,11 @@ add_executable(curve_fitting_viewer test/curve_fitting_viewer.cpp src/Curve_comm
 target_link_libraries(curve_fitting_viewer
    ${catkin_LIBRARIES}
 )
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
