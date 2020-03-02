@@ -9,15 +9,15 @@ Curve_common::Curve_common()
 
 }
 
-nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::Point start_point, geometry_msgs::Point end_point, double t_intervel)
+nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::Point start_point, geometry_msgs::Point end_point, double t_intervel, std::string frame_id)
 {
     nav_msgs::Path line_result;
     geometry_msgs::PoseStamped current_pose;
     
-    line_result.header.frame_id = "odom";
+    line_result.header.frame_id = frame_id;
     line_result.header.stamp = ros::Time::now();
 
-    current_pose.header.frame_id = "odom";
+    current_pose.header.frame_id = frame_id;
 
     int segment = 1 / t_intervel;
     double line_parameter = 0;
@@ -37,15 +37,15 @@ nav_msgs::Path Curve_common::Generate_Line(geometry_msgs::Point start_point, geo
     return line_result;
 }
 
-nav_msgs::Path Curve_common::Generate_BezierCurve(EigenTrajectoryPoint::Vector control_point, double t_intervel)
+nav_msgs::Path Curve_common::Generate_BezierCurve(EigenTrajectoryPoint::Vector control_point, double t_intervel, std::string frame_id)
 {
     nav_msgs::Path bezier_curve_result;
     geometry_msgs::PoseStamped current_pose;
     EigenTrajectoryPoint::Vector temp_control_point_vec;
     
-    bezier_curve_result.header.frame_id = "odom";
+    bezier_curve_result.header.frame_id = frame_id;
     bezier_curve_result.header.stamp = ros::Time::now();
-    current_pose.header.frame_id = "odom";
+    current_pose.header.frame_id = frame_id;
 
     int segment = 1 / t_intervel;
     int control_point_length = control_point.size();
@@ -177,14 +177,14 @@ void Curve_common::ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector
     // }
 }
 
-nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel)
+nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel, std::string frame_id)
 {
     nav_msgs::Path bspline_curve_result;
     geometry_msgs::PoseStamped current_pose;
     
-    bspline_curve_result.header.frame_id = "odom";
+    bspline_curve_result.header.frame_id = frame_id;
     bspline_curve_result.header.stamp = ros::Time::now();
-    current_pose.header.frame_id = "odom";
+    current_pose.header.frame_id = frame_id;
 
     int p_degree = bspline_inf.order - 1;
     int n = bspline_inf.control_point.size() - 1;

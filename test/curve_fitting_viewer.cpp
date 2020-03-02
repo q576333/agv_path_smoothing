@@ -19,6 +19,7 @@ int main(int argc, char **argv)
     int input_order;
     std::string input_parameter_method = "Chord";
     std::string input_knotvector_method = "Average";
+    std::string frame_id = "odom";
     
     Spline_Inf curve_fitting_result;
     Curve_common CurveDesign;
@@ -80,7 +81,7 @@ int main(int argc, char **argv)
                 curve_fitting_result = CurveFit.UnLimitCurveFitting(eigen_fitting_point, input_order, dis_u_method::Average, knotvector_method::Equal_space);
         }
             
-        myCurve = CurveDesign.Generate_BsplineCurve(curve_fitting_result, t_intervel);
+        myCurve = CurveDesign.Generate_BsplineCurve(curve_fitting_result, t_intervel, frame_id);
         
         CurveDesign.ShowDiscreatePoint(&control_points, curve_fitting_result.control_point);
         

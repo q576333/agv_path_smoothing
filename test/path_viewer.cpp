@@ -25,6 +25,7 @@ int main(int argc, char **argv)
     geometry_msgs::Point start;
     geometry_msgs::Point goal;
     visualization_msgs::Marker points;
+    std::string frame_id = "odom";
     std::vector<double> input_control_point;
     EigenTrajectoryPoint::Vector control_point;
 
@@ -57,7 +58,7 @@ int main(int argc, char **argv)
         CurveDesign.ShowDiscreatePoint(&points, control_point);
 
         //myCurve = CurveDesign.Generate_Line(start, goal, t_intervel);
-        myCurve = CurveDesign.Generate_BezierCurve(control_point, t_intervel);
+        myCurve = CurveDesign.Generate_BezierCurve(control_point, t_intervel, frame_id);
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0)
         {

@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 
     nav_msgs::Path myCurve;
     visualization_msgs::Marker points;
+    std::string frame_id = "odom";
     std::vector<double> input_control_point;
     std::vector<double> input_knot_vector;
     Spline_Inf input_spline_inf;
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
         CurveDesign.ShowDiscreatePoint(&points, control_point);
         CurveDesign.ReadSplineInf(&input_spline_inf, 3, control_point, input_knot_vector);
         
-        myCurve = CurveDesign.Generate_BsplineCurve(input_spline_inf, t_intervel);
+        myCurve = CurveDesign.Generate_BsplineCurve(input_spline_inf, t_intervel, frame_id);
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0)
         {
