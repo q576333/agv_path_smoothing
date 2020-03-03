@@ -135,6 +135,64 @@ void Curve_common::ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, E
     // }
 }
 
+visualization_msgs::Marker Curve_common::ShowDiscreatePoint(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, const std::string& name, double scale) 
+{
+    visualization_msgs::Marker waypoints_marker;
+
+    waypoints_marker.header.frame_id = frame_id;
+    waypoints_marker.header.stamp = ros::Time::now();
+    waypoints_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    //waypoints_marker.color = color;
+    waypoints_marker.color.r = 1;
+    waypoints_marker.color.g = 1;
+    waypoints_marker.color.a = 0.75;
+    waypoints_marker.ns = name;
+    waypoints_marker.scale.x = scale;
+    waypoints_marker.scale.y = scale;
+    waypoints_marker.scale.z = scale;
+
+    waypoints_marker.points.reserve(discreate_point.size());
+
+    geometry_msgs::Point view_point;
+    for(int i = 0; i < discreate_point.size(); i++)
+    {
+        view_point.x = discreate_point.at(i)(0);
+        view_point.y = discreate_point.at(i)(1);
+        waypoints_marker.points.push_back(view_point);
+    }
+
+    return waypoints_marker;
+}
+
+visualization_msgs::Marker Curve_common::ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale) 
+{
+    visualization_msgs::Marker waypoints_marker;
+
+    waypoints_marker.header.frame_id = frame_id;
+    waypoints_marker.header.stamp = ros::Time::now();
+    waypoints_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    //waypoints_marker.color = color;
+    waypoints_marker.color.r = 1;
+    waypoints_marker.color.g = 1;
+    waypoints_marker.color.a = 0.75;
+    waypoints_marker.ns = name;
+    waypoints_marker.scale.x = scale;
+    waypoints_marker.scale.y = scale;
+    waypoints_marker.scale.z = scale;
+
+    waypoints_marker.points.reserve(discreate_point.size());
+
+    geometry_msgs::Point view_point;
+    for(int i = 0; i < discreate_point.size(); i++)
+    {
+        view_point.x = discreate_point.at(i).position(0);
+        view_point.y = discreate_point.at(i).position(1);
+        waypoints_marker.points.push_back(view_point);
+    }
+
+    return waypoints_marker;
+}
+
 void Curve_common::ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point)
 {
     geometry_msgs::Point view_point;

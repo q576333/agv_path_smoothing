@@ -46,6 +46,8 @@ class Curve_common
         void ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > *input_point, std::vector<double> file_discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point);
+        visualization_msgs::Marker ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale);
+        visualization_msgs::Marker ShowDiscreatePoint(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, const std::string& name, double scale);
     private:
 };
 
