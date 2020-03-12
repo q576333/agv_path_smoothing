@@ -26,9 +26,11 @@ int main(int argc, char **argv)
     Curve_fitting CurveFit;
     EigenTrajectoryPoint::Vector eigen_fitting_point;
     std::vector<double> input_fitting_point;
+    std::vector<double> weight_vector;
     EigenTrajectoryPoint::Vector eigen_control_point;
 
     private_nh.getParam("/fitting_point", input_fitting_point);
+    private_nh.getParam("/weight_vector", weight_vector);
     private_nh.param("order", input_order, 3);
     private_nh.param("parameter_method", input_parameter_method, input_parameter_method);
     private_nh.param("knotvector_method", input_knotvector_method, input_knotvector_method);
@@ -81,7 +83,9 @@ int main(int argc, char **argv)
                 curve_fitting_result = CurveFit.UnLimitCurveFitting(eigen_fitting_point, input_order, dis_u_method::Average, knotvector_method::Equal_space);
         }
             
-        myCurve = CurveDesign.Generate_BsplineCurve(curve_fitting_result, t_intervel, frame_id);
+        //myCurve = CurveDesign.Generate_BsplineCurve(curve_fitting_result, t_intervel, frame_id);
+        CurveDesign.ReadSplineInf(&curve_fitting_result, weight_vector);
+        myCurve = CurveDesign.Generate_NURBSCurve(curve_fitting_result, t_intervel, frame_id);
         
         CurveDesign.ShowDiscreatePoint(&control_points, curve_fitting_result.control_point);
         

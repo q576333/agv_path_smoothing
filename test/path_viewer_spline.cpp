@@ -17,6 +17,7 @@ int main(int argc, char **argv)
     std::string frame_id = "odom";
     std::vector<double> input_control_point;
     std::vector<double> input_knot_vector;
+    std::vector<double> weight_vector;
     Spline_Inf input_spline_inf;
     std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point;
 
@@ -24,6 +25,7 @@ int main(int argc, char **argv)
 
     private_nh.getParam("/control_point", input_control_point);
     private_nh.getParam("/knot_vector", input_knot_vector);
+    private_nh.getParam("/weight_vector", weight_vector);
 
     while(ros::ok())
     {
@@ -44,7 +46,9 @@ int main(int argc, char **argv)
         CurveDesign.ShowDiscreatePoint(&points, control_point);
         CurveDesign.ReadSplineInf(&input_spline_inf, 3, control_point, input_knot_vector);
         
-        myCurve = CurveDesign.Generate_BsplineCurve(input_spline_inf, t_intervel, frame_id);
+        //myCurve = CurveDesign.Generate_BsplineCurve(input_spline_inf, t_intervel, frame_id);
+        CurveDesign.ReadSplineInf(&input_spline_inf, weight_vector);
+        myCurve = CurveDesign.Generate_NURBSCurve(input_spline_inf, t_intervel, frame_id);
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0)
         {

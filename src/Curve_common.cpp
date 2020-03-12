@@ -235,6 +235,16 @@ void Curve_common::ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector
     // }
 }
 
+void Curve_common::ReadSplineInf(Spline_Inf *spline_inf, std::vector<double> weight_vector)
+{
+    if(spline_inf->control_point.size() != weight_vector.size())
+    {
+        std::cout << "weight vector size is wrong" << "\n";
+        return;
+    }
+    spline_inf->weight.assign(weight_vector.begin(), weight_vector.end());
+}
+
 nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel, std::string frame_id)
 {
     nav_msgs::Path bspline_curve_result;
@@ -407,4 +417,148 @@ nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, doubl
 
     std::cout << "End calculate bspline function" << "\n";
     return bspline_curve_result;
+}
+
+nav_msgs::Path Curve_common::Generate_NURBSCurve(Spline_Inf spline_inf, double t_intervel, std::string frame_id)
+{
+    nav_msgs::Path nurbs_curve_result;
+    geometry_msgs::PoseStamped current_pose;
+    
+    nurbs_curve_result.header.frame_id = frame_id;
+    nurbs_curve_result.header.stamp = ros::Time::now();
+    current_pose.header.frame_id = frame_id;
+
+    int p_degree = spline_inf.order - 1;
+    int n = spline_inf.control_point.size() - 1;
+    //TODO: Check knot vector size and sequence is correect
+    int m = spline_inf.knot_vector.size() - 1; //The last knot vector index number
+    int segment = 1 / t_intervel;
+    double delta_t = 100;
+    double curve_parameter = 0;
+    double left_denom = 0, right_denom = 0;
+    double left_term = 0, right_term = 0;
+    double sum_nurbs_denom = 0, sum_nurbs_fract = 0;
+    double sum_x = 0, sum_y = 0;
+    std::vector<double> curve_parameter_vec;
+    Eigen::VectorXd temp_basic_function;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > temp_basic_function_eigen;
+
+    //Debug use
+    // for(int i = 0; i < bspline_inf.knot_vector.size(); i++)
+    // {
+    //     std::cout << "knot vector x : " << bspline_inf.knot_vector.at(i) << "\n";    
+    // }
+
+    // std::cout << "input control point size : " << bspline_inf.control_point.size() << "\n";
+    // for(int i = 0; i < bspline_inf.control_point.size(); i++)
+    // {
+    //     std::cout << "control point x : " << bspline_inf.control_point.at(i)(0) << ", y = " << bspline_inf.control_point.at(i)(1) << "\n";
+    // }
+
+    if(spline_inf.weight.size() == 0)
+    {
+        std::cout << "weight vector size is zero, please call read ReadSplineInf function" << "\n";
+        return nurbs_curve_result;
+    }
+
+    //TODO: Can optimal this part code
+    delta_t = 1 / (double)(segment - 1);
+    curve_parameter_vec.resize(segment);
+    for(int u = 0; u < segment; u++)
+    {
+        curve_parameter_vec[u] = curve_parameter;
+        curve_parameter += delta_t;
+    }
+
+    spline_inf.N.clear();
+    temp_basic_function.resize(segment);
+
+    //TODO: Check basic function boundary is correct
+    //Calculate degree = 0's basic function
+    for(int i = 0; i < m; i++)
+    {        
+        if(spline_inf.knot_vector.at(i) != spline_inf.knot_vector.at(n))
+        {
+            for(int u = 0; u < segment; u++)
+            {
+                if(spline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] < spline_inf.knot_vector.at(i+1))                        
+                    temp_basic_function(u) = 1;
+                else
+                    temp_basic_function(u) = 0;
+
+                //std::cout << "small temp basic function index : " << u << " small temp basic function value : " << temp_basic_function(u) << "\n";
+                //std::cout << "small temp basic function value : " << temp_basic_function(u) << "\n";
+            }
+        }
+        else
+        {
+            for(int u = 0; u < segment; u++)
+            {
+                if(spline_inf.knot_vector.at(i) <= curve_parameter_vec[u] && curve_parameter_vec[u] <= spline_inf.knot_vector.at(i+1))                        
+                    temp_basic_function(u) = 1;
+                else
+                    temp_basic_function(u) = 0;
+
+                //std::cout << "temp basic function index : " << u << "temp basic function value : " << temp_basic_function(u) << "\n";
+                //std::cout << "small temp basic function value : " << temp_basic_function(u) << "\n";
+            }
+        }
+        
+        spline_inf.N.push_back(temp_basic_function);   
+        //std::cout << i << "'s bspline_inf Ni,0 size " << temp_basic_function.size() << "\n";
+    }
+
+    //Calculate the rest of basic function
+    for(int p = 1; p <= p_degree; p++)
+    {
+        temp_basic_function_eigen.clear();
+        for(int i = 0; i < (m - p); i++)
+        {
+            for(int u = 0; u < segment; u++)
+            {
+                left_denom = spline_inf.knot_vector.at(p+i) - spline_inf.knot_vector.at(i);
+                right_denom = spline_inf.knot_vector.at(i+p+1) - spline_inf.knot_vector.at(i+1);
+
+                if(left_denom == 0)
+                    left_term = 0;
+                else
+                    left_term = (curve_parameter_vec[u] - spline_inf.knot_vector.at(i)) * spline_inf.N.at(i)(u) / left_denom;
+
+                if(right_denom == 0)
+                    right_term = 0;
+                else
+                    right_term = (spline_inf.knot_vector.at(i+p+1) - curve_parameter_vec[u]) * spline_inf.N.at(i+1)(u) / right_denom;
+                
+                temp_basic_function(u) = left_term + right_term;            
+            }
+            temp_basic_function_eigen.push_back(temp_basic_function);
+        }
+        spline_inf.N = temp_basic_function_eigen;
+    }
+
+    for(int u = 0; u < segment; u++)
+    {   
+        sum_nurbs_denom = 0;
+        sum_x = 0;
+        sum_y = 0;
+        for(int i = 0; i < spline_inf.N.size(); i++)
+        { 
+            sum_nurbs_denom += spline_inf.N.at(i)(u) * spline_inf.weight.at(i);
+            sum_x += spline_inf.control_point.at(i)(0) * spline_inf.N.at(i)(u) * spline_inf.weight.at(i);
+            sum_y += spline_inf.control_point.at(i)(1) * spline_inf.N.at(i)(u) * spline_inf.weight.at(i);  
+            //std::cout << i << "'s ," << u <<"'s bspline_inf value : " << bspline_inf.N.at(i)(u) << "\n";
+        }
+        sum_x /= sum_nurbs_denom;
+        sum_y /= sum_nurbs_denom;
+        std::cout << u << "'s current_pose x : " << sum_x << "\n";
+        std::cout << u << "'s current_pose y : " << sum_y << "\n";
+        current_pose.header.seq = u;
+        current_pose.header.stamp = ros::Time::now();
+        current_pose.pose.position.x = sum_x;
+        current_pose.pose.position.y = sum_y;
+        nurbs_curve_result.poses.push_back(current_pose);        
+    }
+
+    std::cout << "End calculate NURBS function" << "\n";
+    return nurbs_curve_result;
 }

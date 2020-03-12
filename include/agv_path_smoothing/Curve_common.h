@@ -41,7 +41,9 @@ class Curve_common
         nav_msgs::Path Generate_Line(geometry_msgs::Point start_point, geometry_msgs::Point end_point, double t_intervel, std::string frame_id);
         nav_msgs::Path Generate_BezierCurve(EigenTrajectoryPoint::Vector control_point, double t_intervel, std::string frame_id);
         nav_msgs::Path Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel, std::string frame_id);
+        nav_msgs::Path Generate_NURBSCurve(Spline_Inf spline_inf, double t_intervel, std::string frame_id);
         void ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point, std::vector<double> knot_vector);
+        void ReadSplineInf(Spline_Inf *bspline_inf, std::vector<double> weight_vector);
         void ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point);
         void ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > *input_point, std::vector<double> file_discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);

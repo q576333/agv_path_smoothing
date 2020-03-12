@@ -1,19 +1,29 @@
 <launch>
+  <arg name="use_rviz" default="true"/>
+
   <!-- <rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam> -->
   <!-- <rosparam param="knot_vector" > [0, 0, 0, 0.204, 0.381, 0.550, 0.755, 1, 1, 1]</rosparam> -->
   <!--<rosparam param="fitting_point" > [0, 0, 3, 4, -1, 4, -4, 0, -4, -3]</rosparam>-->
-  <rosparam param="fitting_point" > [-6, -3, -5, -2.5, 1, 3, 2, 1.5, 3, 1, 7, 1.5, 9, -2.5]</rosparam>
+  <!--<rosparam param="fitting_point" > [-6, -3, -5, -2.5, 1, 3, 2, 1.5, 3, 1, 7, 1.5, 9, -2.5]</rosparam>-->
   <!-- <rosparam param="fitting_point" > [-3, -5, -1, 1, 0, 4, 1, 2, 4, -2, 7, 0, 7, 4, 7, 11, 11, 7]</rosparam>-->
+  <rosparam param="fitting_point" > [0, 0, 2.5, -2.5, 5, 0, 2.5, 2.5, 0, 0]</rosparam>
+  <rosparam param="weight_vector" > [1, 1, 1, 1, 1]</rosparam>
 
-<!--
+  <!--
   <arg name="launch_parameter_methods" default="Chord" doc="method type [Chord, Centripetal, Average]"/>
   <arg name="launch_knotvector_methods" default="Average" doc="method type [Average, Equal_space]"/> -->
 
-<!-- path viewer -->
+  <!-- path viewer -->
   <node pkg="agv_path_smoothing" name="curve_fitting_viewer" type="curve_fitting_viewer" output="screen">
     <param name="input_order" type="int" value="5" />
     <param name="parameter_method" type="string" value="Chord" /> <!-- Chord, Centripetal, Average -->
     <param name="knotvector_method" type="string" value="Average" /> <!-- Average, Equal_space -->
   </node>
+
+  <!-- rviz -->
+  <group if="$(arg use_rviz)"> 
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find agv_path_smoothing)/rviz/path_smoothing.rviz"/>
+  </group>
 
 </launch>
