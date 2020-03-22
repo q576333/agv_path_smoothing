@@ -20,6 +20,11 @@ struct Spline_Inf
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point;
     std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > N;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > dN;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > ddN;
+    std::vector<double> N_double_vec;
+    std::vector<double> dN_double_vec;
+    // std::vector<double> ddN_double_vec;
     //Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> N; //bsaic function
     Eigen::MatrixXd curvefit_N;
     
@@ -42,24 +47,22 @@ class Curve_common
         nav_msgs::Path Generate_BezierCurve(EigenTrajectoryPoint::Vector control_point, double t_intervel, std::string frame_id);
         nav_msgs::Path Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel, std::string frame_id);
         nav_msgs::Path Generate_NURBSCurve(Spline_Inf spline_inf, double t_intervel, std::string frame_id);
+        nav_msgs::Path Generate_DerivativeBsplineCurve(Spline_Inf bspline_inf, int differential_times, double t_intervel, std::string frame_id);
+        nav_msgs::Path Generate_DerivativeBasisFuncCurve(Spline_Inf bspline_inf, int differential_times, int index, double t_intervel, std::string frame_id);
+
         void ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point, std::vector<double> knot_vector);
         void ReadSplineInf(Spline_Inf *bspline_inf, std::vector<double> weight_vector);
         void ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point);
         void ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > *input_point, std::vector<double> file_discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point);
+        
         visualization_msgs::Marker ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale);
         visualization_msgs::Marker ShowDiscreatePoint(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, const std::string& name, double scale);
     private:
+        void CalculateDerivativeBasisFunc(Spline_Inf *spline_inf, double u_data, int differential_times);
+        geometry_msgs::Point CalculateDerivativeCurvePoint(Spline_Inf spline_inf, double u_data);
+        
 };
 
-// #define MAV_MSGS_CONCATENATE(x, y) x##y
-// #define MAV_MSGS_CONCATENATE2(x, y) MAV_MSGS_CONCATENATE(x, y)
-// #define MAV_MSGS_MAKE_ALIGNED_CONTAINERS(EIGEN_TYPE)                    \
-//   typedef std::vector<EIGEN_TYPE, Eigen::aligned_allocator<EIGEN_TYPE>> \
-//       MAV_MSGS_CONCATENATE2(EIGEN_TYPE, Vector);                        \
-//   typedef std::deque<EIGEN_TYPE, Eigen::aligned_allocator<EIGEN_TYPE>>  \
-//       MAV_MSGS_CONCATENATE2(EIGEN_TYPE, Deque);
-
-// MAV_MSGS_MAKE_ALIGNED_CONTAINERS(EigenTrajectoryPoint)
 #endif //AGV_PATH_SMOOTHING_CURVE_COMMON_H_

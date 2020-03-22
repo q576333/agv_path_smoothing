@@ -1,20 +1,37 @@
 <launch>
   <arg name="use_rviz" default="true"/>
 
-  <!--<rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam>
+  <!--
+  <rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.204, 0.381, 0.550, 0.755, 1, 1, 1]</rosparam>-->
+  <!---->
+  <rosparam param="control_point" > [6, 0, 4.83189, 4.238768, -1.373841, 4.584125, -5.469913, -1.330457, 5.463224, 4.614782, -4, -3]</rosparam>
+  <rosparam param="knot_vector" > [0, 0, 0, 0.264588, 0.43468, 0.630951, 1, 1, 1]</rosparam>
+  <!--
+  <rosparam param="control_point" > [-3, -5, -2.25, -2.75, -1, 1, 0, 4, 1, 7, 2.25, 10.75, 3, 13]</rosparam>
+  <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.416667, 0.583333, 0.75, 1, 1, 1]</rosparam>-->
+
+  <!-- For test NURBS splineinf
   <rosparam param="control_point" > [0, 0, 0, 2.5, 5, 2.5, 5, 0, 5, -2.5, 0, -2.5, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>
+  -->
+
+  <!-- Gazebo Environment 
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch">
+  </include>-->
 
   <!-- path viewer -->
   <node pkg="agv_path_smoothing" name="path_viewer_spline" type="path_viewer_spline" output="screen">
+    <param name="visual1_differential_times" type="int" value="1" />
+    <param name="visual2_differential_times" type="int" value="2" />
+    <param name="basis_index" type="int" value="3" />
   </node>
 
-  <!-- rviz -->
+  <!-- rviz 
   <group if="$(arg use_rviz)"> 
     <node pkg="rviz" type="rviz" name="rviz" required="true"
           args="-d $(find agv_path_smoothing)/rviz/path_viewer_spline.rviz"/>
-  </group>
+  </group>-->
 
 </launch>

@@ -512,7 +512,7 @@ nav_msgs::Path Curve_common::Generate_NURBSCurve(Spline_Inf spline_inf, double t
     for(int p = 1; p <= p_degree; p++)
     {
         temp_basic_function_eigen.clear();
-        for(int i = 0; i < (m - p); i++)
+        for(int i = 0; i < (m - p); i++) //m-p is calculate how many region between basis function
         {
             for(int u = 0; u < segment; u++)
             {
@@ -561,4 +561,243 @@ nav_msgs::Path Curve_common::Generate_NURBSCurve(Spline_Inf spline_inf, double t
 
     std::cout << "End calculate NURBS function" << "\n";
     return nurbs_curve_result;
+}
+
+void Curve_common::CalculateDerivativeBasisFunc(Spline_Inf *spline_inf, double u_data, int differential_times)
+{
+    int p_degree = spline_inf->order - 1;
+    int n = spline_inf->control_point.size() - 1;
+    //TODO: Check knot vector size and sequence is correect
+    int m = spline_inf->knot_vector.size() - 1; //The last knot vector index number
+    double left_denom = 0, right_denom = 0;
+    double left_term = 0, right_term = 0;
+    double derivative_left_term = 0, derivative_right_term = 0;
+    double derivative_value = 0;
+    std::vector<double> temp_basic_function;
+    Eigen::VectorXd derivative_temp_basic_function;
+    double degree_basis_value;
+    std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > derivative_basic_function_eigen;
+
+    //Calculate degree = 0's basic function
+    spline_inf->N_double_vec.clear();
+    spline_inf->N_double_vec.resize(m);
+    for(int i = 0; i < m; i++)
+    {
+        if(spline_inf->knot_vector.at(i) != spline_inf->knot_vector.at(n))
+        {
+            if(spline_inf->knot_vector.at(i) <= u_data && u_data < spline_inf->knot_vector.at(i+1))                        
+                degree_basis_value = 1;
+            else
+                degree_basis_value = 0;
+        }
+        else
+        { 
+            if(spline_inf->knot_vector.at(i) <= u_data && u_data <= spline_inf->knot_vector.at(i+1))                        
+                degree_basis_value = 1;
+            else
+                degree_basis_value = 0;
+        }
+
+        spline_inf->N_double_vec.at(i) = degree_basis_value;
+    }
+
+    //Calculate the rest of basic function
+    //temp_basic_function.resize(m);
+    //derivative_temp_basic_function.resize(m);
+    //spline_inf->N_double_vec.resize(m);
+    derivative_temp_basic_function.resize(m);
+    //spline_inf->dN.resize(m);
+    spline_inf->dN.clear();
+    for(int p = 1; p <= p_degree; p++)
+    {        
+        temp_basic_function.clear();
+        for(int i = 0; i < (m - p); i++)
+        {
+            left_denom = spline_inf->knot_vector.at(p+i) - spline_inf->knot_vector.at(i);
+            right_denom = spline_inf->knot_vector.at(i+p+1) - spline_inf->knot_vector.at(i+1);
+
+            if(left_denom == 0)
+            {
+                left_term = 0;
+                derivative_left_term = 0;
+            }    
+            else
+            {
+                left_term = (u_data - spline_inf->knot_vector.at(i)) * spline_inf->N_double_vec.at(i) / left_denom;
+                derivative_left_term = spline_inf->N_double_vec.at(i) / left_denom;
+            }
+                
+            if(right_denom == 0)
+            {
+                right_term = 0;
+                derivative_right_term = 0;
+            }                
+            else
+            {
+                right_term = (spline_inf->knot_vector.at(i+p+1) - u_data) * spline_inf->N_double_vec.at(i+1) / right_denom;
+                derivative_right_term = spline_inf->N_double_vec.at(i+1) / right_denom;
+            }
+                               
+            derivative_value = p * (derivative_left_term - derivative_right_term);              
+            temp_basic_function.push_back(left_term + right_term);  //Calculate Ni,p
+            derivative_temp_basic_function(i) = derivative_value;  //Calculate dNi,p
+        }
+        spline_inf->N_double_vec.assign(temp_basic_function.begin(), temp_basic_function.end());
+        spline_inf->dN.push_back(derivative_temp_basic_function); 
+    }
+    
+    if(differential_times > 1)
+    {
+        derivative_temp_basic_function.resize(m);
+        spline_inf->ddN.clear();
+        for(int p = 1; p <= p_degree; p++)
+        {
+            for(int i = 0; i < (m - p); i++)
+            {
+                left_denom = spline_inf->knot_vector.at(p+i) - spline_inf->knot_vector.at(i);
+                right_denom = spline_inf->knot_vector.at(i+p+1) - spline_inf->knot_vector.at(i+1);
+
+                if(left_denom == 0)            
+                    derivative_left_term = 0;  
+                else
+                    derivative_left_term = spline_inf->dN.at(p-1)(i) / left_denom;
+                    
+                if(right_denom == 0)
+                    derivative_right_term = 0;               
+                else
+                    derivative_right_term = spline_inf->dN.at(p-1)(i+1) / right_denom;
+                                
+                derivative_value = p * (derivative_left_term - derivative_right_term);
+                derivative_temp_basic_function(i) = derivative_value;  //Calculate ddNi,p                
+            }
+            spline_inf->ddN.push_back(derivative_temp_basic_function); 
+        }
+    }
+}
+
+geometry_msgs::Point Curve_common::CalculateDerivativeCurvePoint(Spline_Inf spline_inf, double u_data)
+{
+    geometry_msgs::Point derivative_curve_point;
+    int p_degree = spline_inf.order - 1;
+    double sum_x = 0, sum_y = 0;
+
+    for(int i = 0; i < spline_inf.control_point.size(); i++)
+    { 
+        sum_x += spline_inf.control_point.at(i)(0) * spline_inf.dN.at(p_degree - 1)(i);
+        sum_y += spline_inf.control_point.at(i)(1) * spline_inf.dN.at(p_degree - 1)(i); 
+    }
+
+    derivative_curve_point.x = sum_x;
+    derivative_curve_point.y = sum_y;
+    return derivative_curve_point;
+}
+
+nav_msgs::Path Curve_common::Generate_DerivativeBsplineCurve(Spline_Inf bspline_inf, int differential_times, double t_intervel, std::string frame_id)
+{
+    geometry_msgs::Point derivative_point_result;
+    nav_msgs::Path bspline_derivative_result;
+    geometry_msgs::PoseStamped current_pose;
+    
+    bspline_derivative_result.header.frame_id = frame_id;
+    bspline_derivative_result.header.stamp = ros::Time::now();
+    current_pose.header.frame_id = frame_id;
+
+    int p_degree = bspline_inf.order - 1;
+    int n = bspline_inf.control_point.size() - 1;
+    //TODO: Check knot vector size and sequence is correect
+    int m = bspline_inf.knot_vector.size() - 1; //The last knot vector index number
+    int segment = 1 / t_intervel;
+    double delta_t = 0;
+    double curve_parameter = 0;
+    std::vector<double> curve_parameter_vec;
+
+    //TODO: Can optimal this part code
+    delta_t = 1 / (double)(segment - 1);
+    curve_parameter_vec.resize(segment);
+    for(int u = 0; u < segment; u++)
+    {
+        curve_parameter_vec[u] = curve_parameter;
+        curve_parameter += delta_t;
+    }
+    
+    //TODO: Can support high order derivative in loop
+    for(int u = 0; u < segment; u++)
+    {
+        CalculateDerivativeBasisFunc(&bspline_inf, curve_parameter_vec[u], differential_times);
+        derivative_point_result = CalculateDerivativeCurvePoint(bspline_inf, curve_parameter_vec[u]);
+        std::cout << curve_parameter_vec[u] << "'s derivative current_pose x : " << derivative_point_result.x << "\n";
+        std::cout << curve_parameter_vec[u] << "'s derivative current_pose y : " << derivative_point_result.y << "\n";
+        current_pose.header.seq = u;
+        current_pose.header.stamp = ros::Time::now();
+        current_pose.pose.position.x = derivative_point_result.x;
+        current_pose.pose.position.y = derivative_point_result.y;
+        bspline_derivative_result.poses.push_back(current_pose);
+    }
+
+    std::cout << "Finished Generate Derivative Bspline Curve" << "\n";
+    return bspline_derivative_result;
+}
+
+nav_msgs::Path Curve_common::Generate_DerivativeBasisFuncCurve(Spline_Inf bspline_inf, int differential_times, int index, double t_intervel, std::string frame_id)
+{
+    geometry_msgs::Point derivative_point_result;
+    nav_msgs::Path derivative_basis_result;
+    geometry_msgs::PoseStamped current_pose;
+    
+    derivative_basis_result.header.frame_id = frame_id;
+    derivative_basis_result.header.stamp = ros::Time::now();
+    current_pose.header.frame_id = frame_id;
+
+    //TODO: Add error ckeck function(below code with error)
+    // if(differential_times == 0 && index < bspline_inf.N_double_vec.size())
+    // {
+    //     std::cout << "Without this index's basis function, vector size is :" << bspline_inf.N_double_vec.size() << "\n";
+    //     return derivative_basis_result;
+    // }
+    // if(differential_times == 1 && index < bspline_inf.dN.back().size())
+    // {
+    //     std::cout << "Without this index's basis function, vector size is :" << bspline_inf.dN.back().size() << "\n";
+    //     return derivative_basis_result;
+    // }
+    // if(differential_times == 2 && index < bspline_inf.ddN.back().size())
+    // {
+    //     std::cout << "Without this index's basis function, vector size is :" << bspline_inf.ddN.back().size() << "\n";
+    //     return derivative_basis_result;
+    // }
+    
+    int p_degree = bspline_inf.order - 1;
+    int n = bspline_inf.control_point.size() - 1;
+    //TODO: Check knot vector size and sequence is correect
+    int m = bspline_inf.knot_vector.size() - 1; //The last knot vector index number
+    int segment = 1 / t_intervel;
+    double delta_t = 0;
+    double curve_parameter = 0;
+    std::vector<double> curve_parameter_vec;
+
+    //TODO: Can optimal this part code
+    delta_t = 1 / (double)(segment - 1);
+    curve_parameter_vec.resize(segment);
+    for(int u = 0; u < segment; u++)
+    {
+        curve_parameter_vec[u] = curve_parameter;
+        curve_parameter += delta_t;
+    }
+    
+    //TODO: Can support high order derivative in loop
+    for(int u = 0; u < segment; u++)
+    {
+        CalculateDerivativeBasisFunc(&bspline_inf, curve_parameter_vec[u], differential_times);
+        current_pose.header.seq = u;
+        current_pose.header.stamp = ros::Time::now();
+        current_pose.pose.position.x = curve_parameter_vec[u];
+        if(differential_times == 0)
+            current_pose.pose.position.y = bspline_inf.N_double_vec.at(index);
+        else if(differential_times == 1)
+            current_pose.pose.position.y = bspline_inf.dN.back()(index);
+        else
+            current_pose.pose.position.y = bspline_inf.ddN.back()(index);
+        derivative_basis_result.poses.push_back(current_pose);
+    }
+
+    return derivative_basis_result;
 }
