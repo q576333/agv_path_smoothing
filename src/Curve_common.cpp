@@ -701,6 +701,13 @@ geometry_msgs::Point Curve_common::CalculateDerivativeCurvePoint(Spline_Inf *spl
     // }
     // std::cout << "\n";
 
+    // std::cout << "dN :" << "\n";
+    // for(int i = 0; i < spline_inf->dN.back().size(); i++)
+    // {
+    //     std::cout << spline_inf->dN.back()(i) << " ";
+    // }
+    // std::cout << "\n";
+
     //TODO: Safety check
     if(UsingNURBS == false)
     {
@@ -725,11 +732,13 @@ geometry_msgs::Point Curve_common::CalculateDerivativeCurvePoint(Spline_Inf *spl
     }
     else
     {        
+        //TODO: Safety check differential_times
         for(int i = 0; i < spline_inf->control_point.size(); i++)
         { 
             sum_denom += spline_inf->N_double_vec.at(i) * spline_inf->weight.at(i);
             sum_derivative_once_denom += spline_inf->dN.back()(i) * spline_inf->weight.at(i);
-            sum_derivative_twice_denom += spline_inf->ddN.back()(i) * spline_inf->weight.at(i);
+            if(differential_times == 2)
+                sum_derivative_twice_denom += spline_inf->ddN.back()(i) * spline_inf->weight.at(i);
         }
         for(int i = 0; i < spline_inf->control_point.size(); i++)
         { 
@@ -740,13 +749,16 @@ geometry_msgs::Point Curve_common::CalculateDerivativeCurvePoint(Spline_Inf *spl
                 dR_left_term_fraction = spline_inf->dN.back()(i) * spline_inf->weight.at(i);
                 dR_right_term = R_fraction * sum_derivative_once_denom / std::pow(sum_denom, 2);
 
-                ddR_left_term_fraction = spline_inf->ddN.back()(i) * spline_inf->weight.at(i);                
-                ddR_median_term_fraction = 2 * dR_left_term_fraction * sum_derivative_once_denom + R_fraction * sum_derivative_twice_denom;
-                ddR_right_term_fraction = 2 * R_fraction * std::pow(sum_derivative_once_denom, 2);
-
+                if(differential_times == 2)
+                {
+                    ddR_left_term_fraction = spline_inf->ddN.back()(i) * spline_inf->weight.at(i);                
+                    ddR_median_term_fraction = 2 * dR_left_term_fraction * sum_derivative_once_denom + R_fraction * sum_derivative_twice_denom;
+                    ddR_right_term_fraction = 2 * R_fraction * std::pow(sum_derivative_once_denom, 2);
+                    spline_inf->ddR_double_vec.push_back( (ddR_left_term_fraction / sum_denom) - (ddR_median_term_fraction / std::pow(sum_denom, 2)) + (ddR_right_term_fraction / std::pow(sum_denom, 3)) );
+                }
+                
                 spline_inf->R_double_vec.push_back(R_fraction / sum_denom);
-                spline_inf->dR_double_vec.push_back((dR_left_term_fraction / sum_denom) - dR_right_term);
-                spline_inf->ddR_double_vec.push_back( (ddR_left_term_fraction / sum_denom) - (ddR_median_term_fraction / std::pow(sum_denom, 2)) + (ddR_right_term_fraction / std::pow(sum_denom, 3)) );
+                spline_inf->dR_double_vec.push_back((dR_left_term_fraction / sum_denom) - dR_right_term);                
             }
             else
             {   
@@ -762,7 +774,7 @@ geometry_msgs::Point Curve_common::CalculateDerivativeCurvePoint(Spline_Inf *spl
             { 
                 sum_x += spline_inf->control_point.at(i)(0) * spline_inf->dR_double_vec.at(i);
                 sum_y += spline_inf->control_point.at(i)(1) * spline_inf->dR_double_vec.at(i); 
-                // std::cout << i << "'s spline_inf.dN : " << spline_inf->dN.back()(i) << "\n";
+                //std::cout << i << "'s spline_inf.dN : " << spline_inf->dN.back()(i) << "\n";
             }
         }
         if(differential_times == 2)
@@ -903,18 +915,14 @@ double Curve_common::CalculateCurvature(Spline_Inf spline_inf, double u_data, bo
 
     Eigen::Vector3d derivative_once_point;
     Eigen::Vector3d derivative_twice_point;
-    geometry_msgs::Point curvature_point;
 
     double curvature = 0;
     double fraction = 0;
     double denominator = 0;
 
     CalculateDerivativeBasisFunc(&spline_inf, u_data, 2);
-    curvature_point = CalculateDerivativeCurvePoint(&spline_inf, u_data, 1, UsingNURBS);
-    derivative_once_point = EigenVecter3dFromPointMsg(curvature_point);
-
-    curvature_point = CalculateDerivativeCurvePoint(&spline_inf, u_data, 2, UsingNURBS);
-    derivative_twice_point = EigenVecter3dFromPointMsg(curvature_point);
+    derivative_once_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 1, UsingNURBS));
+    derivative_twice_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 2, UsingNURBS));
     
     fraction = derivative_once_point.cross(derivative_twice_point).lpNorm<2>();
     denominator = std::pow(derivative_once_point.lpNorm<2>(), 3);
@@ -936,4 +944,38 @@ double Curve_common::CalculateCurvatureRadius(Spline_Inf spline_inf, double u_da
         return curvature_radius = 0;
     else
         return curvature_radius = 1 / curvature;
+}
+
+double Curve_common::CalculateCurveLength(Spline_Inf spline_inf, double start_u, double end_u, int sub_intervals, bool UsingNURBS)
+{
+    if(sub_intervals % 2 != 0)
+    {
+        std::cout << "Error! sub_intervals value is a even number" << "\n";
+        return 0;
+    }
+
+    Eigen::Vector3d eigen_derivative_point;
+    double sum_length = 0;
+    double interval = 0;
+    double u_index = 0;
+
+    interval = (end_u - start_u) / (double)sub_intervals;
+    
+    for(int i = 0; i <= sub_intervals; i++)
+    {
+        u_index = start_u + interval * i;
+        CalculateDerivativeBasisFunc(&spline_inf, u_index, 1);
+        eigen_derivative_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_index, 1, UsingNURBS));
+
+        if(i == 0 || i == sub_intervals)
+            sum_length += eigen_derivative_point.lpNorm<2>();
+        else if((i % 2) == 1)
+            sum_length += 4 * eigen_derivative_point.lpNorm<2>();
+        else if((i % 2) == 0)
+            sum_length += 2 * eigen_derivative_point.lpNorm<2>();
+    }
+
+    sum_length *= interval / 3;
+    
+    return sum_length;
 }

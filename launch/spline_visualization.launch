@@ -26,7 +26,10 @@
     <param name="visual1_differential_times" type="int" value="1" />
     <param name="visual2_differential_times" type="int" value="2" />
     <param name="basis_index" type="int" value="0" />
-    <param name="curvature_u_data" type="double" value="0.5" />
+    <param name="curvature_u_data" type="double" value="0.0" />
+    <param name="Length_start_u" type="double" value="0.0" />
+    <param name="Length_end_u" type="double" value="0.5" />
+    <param name="Number_of_interval" type="int" value="50000" /> <!-- even number -->
   </node>
 
   <!-- rviz 

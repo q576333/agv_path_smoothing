@@ -54,6 +54,7 @@ class Curve_common
 
         double CalculateCurvature(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurvatureRadius(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
+        double CalculateCurveLength(Spline_Inf spline_inf, double start_u, double end_u, int sub_intervals, bool UsingNURBS);
 
         void ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point, std::vector<double> knot_vector);
         void ReadSplineInf(Spline_Inf *bspline_inf, std::vector<double> weight_vector);

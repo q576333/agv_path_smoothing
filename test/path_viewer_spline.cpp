@@ -26,6 +26,9 @@ int main(int argc, char **argv)
     int differential_basis2 = 0;
     int basis_index = 0;
     double curvature_u_data = 0;
+    double start_u = 0;
+    double end_u = 0;
+    int sub_intervals = 0;
 
     Curve_common CurveDesign;
 
@@ -36,6 +39,9 @@ int main(int argc, char **argv)
     private_nh.param("visual2_differential_times", differential_basis2, 0);
     private_nh.param("basis_index", basis_index, 0);
     private_nh.param("curvature_u_data", curvature_u_data, 0.0);
+    private_nh.param("Length_start_u", start_u, 0.0);
+    private_nh.param("Length_end_u", end_u, 1.0);
+    private_nh.param("Number_of_interval", sub_intervals, 20000);
 
     while(ros::ok())
     {
@@ -66,8 +72,9 @@ int main(int argc, char **argv)
         myCurve = CurveDesign.Generate_NURBSCurve(input_spline_inf, t_intervel, frame_id);
         //derivative_myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis1, basis_index, t_intervel, frame_id);
         //myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);
-        std::cout << "Curvature is : " << CurveDesign.CalculateCurvature(input_spline_inf, curvature_u_data, true) << "\n";
+        //std::cout << "Curvature is : " << CurveDesign.CalculateCurvature(input_spline_inf, curvature_u_data, true) << "\n";
         std::cout << "Curvature radius is : " << CurveDesign.CalculateCurvatureRadius(input_spline_inf, curvature_u_data, true) << "\n";
+        std::cout << "Curve length is : " << CurveDesign.CalculateCurveLength(input_spline_inf, start_u, end_u, sub_intervals, true) << "\n";
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0 && pub_derivative_curve.getNumSubscribers() == 0)
         {
