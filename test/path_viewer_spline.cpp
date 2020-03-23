@@ -25,6 +25,7 @@ int main(int argc, char **argv)
     int differential_basis1 = 0;
     int differential_basis2 = 0;
     int basis_index = 0;
+    double curvature_u_data = 0;
 
     Curve_common CurveDesign;
 
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
     private_nh.param("visual1_differential_times", differential_basis1, 0);
     private_nh.param("visual2_differential_times", differential_basis2, 0);
     private_nh.param("basis_index", basis_index, 0);
+    private_nh.param("curvature_u_data", curvature_u_data, 0.0);
 
     while(ros::ok())
     {
@@ -54,14 +56,18 @@ int main(int argc, char **argv)
         CurveDesign.ShowDiscreatePoint(&points, control_point);
         CurveDesign.ReadSplineInf(&input_spline_inf, 3, control_point, input_knot_vector);
         
-        myCurve = CurveDesign.Generate_BsplineCurve(input_spline_inf, t_intervel, frame_id);
+        //myCurve = CurveDesign.Generate_BsplineCurve(input_spline_inf, t_intervel, frame_id);
         //derivative_myCurve = CurveDesign.Generate_DerivativeBsplineCurve(input_spline_inf, 1, t_intervel, frame_id);
-        derivative_myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis1, basis_index, t_intervel, frame_id);
-        myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);
+        //derivative_myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis1, basis_index, t_intervel, frame_id);
+        //myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);
 
         //test NURBS curve
-        // CurveDesign.ReadSplineInf(&input_spline_inf, weight_vector);
-        // myCurve = CurveDesign.Generate_NURBSCurve(input_spline_inf, t_intervel, frame_id);
+        CurveDesign.ReadSplineInf(&input_spline_inf, weight_vector);
+        myCurve = CurveDesign.Generate_NURBSCurve(input_spline_inf, t_intervel, frame_id);
+        //derivative_myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis1, basis_index, t_intervel, frame_id);
+        //myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);
+        std::cout << "Curvature is : " << CurveDesign.CalculateCurvature(input_spline_inf, curvature_u_data, true) << "\n";
+        std::cout << "Curvature radius is : " << CurveDesign.CalculateCurvatureRadius(input_spline_inf, curvature_u_data, true) << "\n";
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0 && pub_derivative_curve.getNumSubscribers() == 0)
         {

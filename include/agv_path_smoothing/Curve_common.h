@@ -23,7 +23,9 @@ struct Spline_Inf
     std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > dN;
     std::vector<Eigen::VectorXd, Eigen::aligned_allocator<Eigen::VectorXd> > ddN;
     std::vector<double> N_double_vec;
-    std::vector<double> dN_double_vec;
+    std::vector<double> R_double_vec;
+    std::vector<double> dR_double_vec;
+    std::vector<double> ddR_double_vec;
     // std::vector<double> ddN_double_vec;
     //Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> N; //bsaic function
     Eigen::MatrixXd curvefit_N;
@@ -50,18 +52,21 @@ class Curve_common
         nav_msgs::Path Generate_DerivativeBsplineCurve(Spline_Inf bspline_inf, int differential_times, double t_intervel, std::string frame_id);
         nav_msgs::Path Generate_DerivativeBasisFuncCurve(Spline_Inf bspline_inf, int differential_times, int index, double t_intervel, std::string frame_id);
 
+        double CalculateCurvature(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
+        double CalculateCurvatureRadius(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
+
         void ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point, std::vector<double> knot_vector);
         void ReadSplineInf(Spline_Inf *bspline_inf, std::vector<double> weight_vector);
         void ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point);
         void ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > *input_point, std::vector<double> file_discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point);
-        
+
         visualization_msgs::Marker ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale);
         visualization_msgs::Marker ShowDiscreatePoint(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, const std::string& name, double scale);
     private:
         void CalculateDerivativeBasisFunc(Spline_Inf *spline_inf, double u_data, int differential_times);
-        geometry_msgs::Point CalculateDerivativeCurvePoint(Spline_Inf spline_inf, double u_data);
+        geometry_msgs::Point CalculateDerivativeCurvePoint(Spline_Inf *spline_inf, double u_data, int differential_times, bool UsingNURBS);
         
 };
 
