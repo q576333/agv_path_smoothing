@@ -407,8 +407,8 @@ nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, doubl
             sum_y += bspline_inf.control_point.at(i)(1) * bspline_inf.N.at(i)(u);  
             //std::cout << i << "'s ," << u <<"'s bspline_inf value : " << bspline_inf.N.at(i)(u) << "\n";
         }
-        std::cout << u << "'s current_pose x : " << sum_x << "\n";
-        std::cout << u << "'s current_pose y : " << sum_y << "\n";
+        // std::cout << u << "'s current_pose x : " << sum_x << "\n";
+        // std::cout << u << "'s current_pose y : " << sum_y << "\n";
         current_pose.header.seq = u;
         current_pose.header.stamp = ros::Time::now();
         current_pose.pose.position.x = sum_x;
@@ -552,8 +552,8 @@ nav_msgs::Path Curve_common::Generate_NURBSCurve(Spline_Inf spline_inf, double t
         }
         sum_x /= sum_nurbs_denom;
         sum_y /= sum_nurbs_denom;
-        std::cout << u << "'s current_pose x : " << sum_x << "\n";
-        std::cout << u << "'s current_pose y : " << sum_y << "\n";
+        // std::cout << u << "'s current_pose x : " << sum_x << "\n";
+        // std::cout << u << "'s current_pose y : " << sum_y << "\n";
         current_pose.header.seq = u;
         current_pose.header.stamp = ros::Time::now();
         current_pose.pose.position.x = sum_x;
