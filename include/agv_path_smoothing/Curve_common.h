@@ -1,6 +1,7 @@
 #ifndef AGV_PATH_SMOOTHING_CURVE_COMMON_H_
 #define AGV_PATH_SMOOTHING_CURVE_COMMON_H_
 
+//#include "agv_path_smoothing/conversion.h"
 #include <Eigen/Eigen>
 //#include <vector>
 // #include <deque>
@@ -52,6 +53,9 @@ class Curve_common
         nav_msgs::Path Generate_DerivativeBsplineCurve(Spline_Inf bspline_inf, int differential_times, double t_intervel, std::string frame_id);
         nav_msgs::Path Generate_DerivativeBasisFuncCurve(Spline_Inf bspline_inf, int differential_times, int index, double t_intervel, std::string frame_id);
 
+        void CalculateDerivativeBasisFunc(Spline_Inf *spline_inf, double u_data, int differential_times);
+        geometry_msgs::Point CalculateDerivativeCurvePoint(Spline_Inf *spline_inf, double u_data, int differential_times, bool UsingNURBS);
+        geometry_msgs::Point CalculateCurvePoint(Spline_Inf *spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurvature(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurvatureRadius(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurveLength(Spline_Inf spline_inf, double start_u, double end_u, int sub_intervals, bool UsingNURBS);
@@ -66,8 +70,7 @@ class Curve_common
         visualization_msgs::Marker ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale);
         visualization_msgs::Marker ShowDiscreatePoint(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, const std::string& name, double scale);
     private:
-        void CalculateDerivativeBasisFunc(Spline_Inf *spline_inf, double u_data, int differential_times);
-        geometry_msgs::Point CalculateDerivativeCurvePoint(Spline_Inf *spline_inf, double u_data, int differential_times, bool UsingNURBS);
+        
         
 };
 

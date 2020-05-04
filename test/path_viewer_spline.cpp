@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 
 #include "agv_path_smoothing/Curve_common.h"
+#include "agv_path_smoothing/conversion.h"
 
 int main(int argc, char **argv)
 {
@@ -22,6 +23,7 @@ int main(int argc, char **argv)
     std::vector<double> weight_vector;
     Spline_Inf input_spline_inf;
     std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point;
+    Eigen::Vector3d eigen_curve_point;
     int differential_basis1 = 0;
     int differential_basis2 = 0;
     int basis_index = 0;
@@ -74,7 +76,19 @@ int main(int argc, char **argv)
         //myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);
         //std::cout << "Curvature is : " << CurveDesign.CalculateCurvature(input_spline_inf, curvature_u_data, true) << "\n";
         std::cout << "Curvature radius is : " << CurveDesign.CalculateCurvatureRadius(input_spline_inf, curvature_u_data, true) << "\n";
-        std::cout << "Curve length is : " << CurveDesign.CalculateCurveLength(input_spline_inf, start_u, end_u, sub_intervals, true) << "\n";
+        std::cout << "Curve total length is : " << CurveDesign.CalculateCurveLength(input_spline_inf, 0.0, 1.0, sub_intervals, true) << "\n";
+        
+        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.25, true));
+        std::cout << "Curve point in u = 0.25, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+
+        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.5, true));
+        std::cout << "Curve point in u = 0.5, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+
+        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.75, true));
+        std::cout << "Curve point in u = 0.75, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+
+        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 1, true));
+        std::cout << "Curve point in u = 1, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
 
         while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0 && pub_derivative_curve.getNumSubscribers() == 0)
         {

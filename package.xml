@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>agv_path_smoothing</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>The agv_path_smoothing package</description>
 
   <maintainer email="q576333@gmail.com">bozhi</maintainer>

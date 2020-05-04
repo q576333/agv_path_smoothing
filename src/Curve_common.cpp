@@ -416,7 +416,7 @@ nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, doubl
         bspline_curve_result.poses.push_back(current_pose);        
     }
 
-    std::cout << "End calculate bspline function" << "\n";
+    std::cout << "End Calculate" << "\n";
     return bspline_curve_result;
 }
 
@@ -438,7 +438,7 @@ nav_msgs::Path Curve_common::Generate_NURBSCurve(Spline_Inf spline_inf, double t
     double curve_parameter = 0;
     double left_denom = 0, right_denom = 0;
     double left_term = 0, right_term = 0;
-    double sum_nurbs_denom = 0, sum_nurbs_fract = 0;
+    double sum_nurbs_denom = 0;
     double sum_x = 0, sum_y = 0;
     std::vector<double> curve_parameter_vec;
     Eigen::VectorXd temp_basic_function;
@@ -978,4 +978,116 @@ double Curve_common::CalculateCurveLength(Spline_Inf spline_inf, double start_u,
     sum_length *= interval / 3;
     
     return sum_length;
+}
+
+geometry_msgs::Point Curve_common::CalculateCurvePoint(Spline_Inf *spline_inf, double u_data, bool UsingNURBS)
+{
+    //TODO: Check u = 1 bug, why x=nan and y=nan?
+
+    geometry_msgs::Point curve_point;
+    int p_degree = spline_inf->order - 1;
+    int n = spline_inf->control_point.size() - 1;
+    //TODO: Check knot vector size and sequence is correect
+    int m = spline_inf->knot_vector.size() - 1; //The last knot vector index number
+    double left_denom = 0, right_denom = 0;
+    double left_term = 0, right_term = 0;
+    std::vector<double> temp_basic_function;
+    double degree_basis_value;
+    double sum_nurbs_denom = 0;
+    double sum_x = 0, sum_y = 0; 
+
+    //Calculate degree = 0's basic function
+    spline_inf->N_double_vec.clear();
+    spline_inf->N_double_vec.resize(m);
+    for(int i = 0; i < m; i++)
+    {
+        // if(spline_inf->knot_vector.at(i) != spline_inf->knot_vector.at(n))
+        if(spline_inf->knot_vector.at(i) != spline_inf->knot_vector.at(i+1))
+        {
+            if(spline_inf->knot_vector.at(i) <= u_data && u_data < spline_inf->knot_vector.at(i+1))                        
+                degree_basis_value = 1;
+            else
+                degree_basis_value = 0;
+        }
+        else
+        { 
+            if(spline_inf->knot_vector.at(i) <= u_data && u_data <= spline_inf->knot_vector.at(i+1))                        
+                degree_basis_value = 1;
+            else
+                degree_basis_value = 0;
+        }
+
+        spline_inf->N_double_vec.at(i) = degree_basis_value;
+    }
+
+    //Calculate the rest of basic function
+    for(int p = 1; p <= p_degree; p++)
+    {        
+        temp_basic_function.clear();
+        for(int i = 0; i < (m - p); i++)
+        {
+            left_denom = spline_inf->knot_vector.at(p+i) - spline_inf->knot_vector.at(i);
+            right_denom = spline_inf->knot_vector.at(i+p+1) - spline_inf->knot_vector.at(i+1);
+
+            if(left_denom == 0)
+            {
+                left_term = 0;
+            }    
+            else
+            {
+                left_term = (u_data - spline_inf->knot_vector.at(i)) * spline_inf->N_double_vec.at(i) / left_denom;
+            }
+                
+            if(right_denom == 0)
+            {
+                right_term = 0;
+            }                
+            else
+            {
+                right_term = (spline_inf->knot_vector.at(i+p+1) - u_data) * spline_inf->N_double_vec.at(i+1) / right_denom;
+            }                                   
+            temp_basic_function.push_back(left_term + right_term);  //Calculate Ni,p
+        }
+        spline_inf->N_double_vec.assign(temp_basic_function.begin(), temp_basic_function.end());
+    }
+
+    if(!UsingNURBS)
+    {
+        for(int i = 0; i < spline_inf->N_double_vec.size(); i++)
+        { 
+            sum_x += spline_inf->control_point.at(i)(0) * spline_inf->N_double_vec.at(i);
+            sum_y += spline_inf->control_point.at(i)(1) * spline_inf->N_double_vec.at(i);  
+            //std::cout << i << "'s ," << u <<"'s bspline_inf value : " << bspline_inf.N.at(i)(u) << "\n";
+        }
+        // std::cout << u << "'s current_pose x : " << sum_x << "\n";
+        // std::cout << u << "'s current_pose y : " << sum_y << "\n";
+        curve_point.x = sum_x;
+        curve_point.y = sum_y;   
+    }
+    else
+    {
+        if(spline_inf->weight.size() == 0)
+        {
+            std::cout << "weight vector size is zero, please call read ReadSplineInf function" << "\n";
+            curve_point.x = 0;
+            curve_point.y = 0;   
+            return curve_point;
+        }
+
+        for(int i = 0; i < spline_inf->N_double_vec.size(); i++)
+        { 
+            sum_nurbs_denom += spline_inf->N_double_vec.at(i) * spline_inf->weight.at(i);
+            sum_x += spline_inf->control_point.at(i)(0) * spline_inf->N_double_vec.at(i) * spline_inf->weight.at(i);
+            sum_y += spline_inf->control_point.at(i)(1) * spline_inf->N_double_vec.at(i) * spline_inf->weight.at(i);  
+            //std::cout << i << "'s ," << u <<"'s bspline_inf value : " << bspline_inf.N.at(i)(u) << "\n";
+        }
+        sum_x /= sum_nurbs_denom;
+        sum_y /= sum_nurbs_denom;
+        // std::cout << u << "'s current_pose x : " << sum_x << "\n";
+        // std::cout << u << "'s current_pose y : " << sum_y << "\n";
+        curve_point.x = sum_x;
+        curve_point.y = sum_y;      
+    }
+    
+    return curve_point;
 }

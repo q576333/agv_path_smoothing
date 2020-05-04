@@ -1,5 +1,5 @@
 <launch>
-  <arg name="use_rviz" default="true"/>
+  <arg name="use_rviz" default="false"/>
 
   <!--
   <rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam>
@@ -11,15 +11,20 @@
   <rosparam param="control_point" > [-3, -5, -2.25, -2.75, -1, 1, 0, 4, 1, 7, 2.25, 10.75, 3, 13]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.416667, 0.583333, 0.75, 1, 1, 1]</rosparam>-->
 
-  <!-- For test NURBS splineinf (Circle) 
+  <!-- For test NURBS splineinf (Circle, r = 2.5) 
   <rosparam param="control_point" > [0, 0, 0, 2.5, 5, 2.5, 5, 0, 5, -2.5, 0, -2.5, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
-   <!-- For test NURBS splineinf (B-Spline)-->
+  <!-- For test NURBS splineinf (Circle, r = 4) -->
+  <rosparam param="control_point" > [0, 0, 0, 2, 4, 2, 4, 0, 4, -2, 0, -2, 0, 0]</rosparam>
+  <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
+  <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>
+
+   <!-- For test NURBS splineinf (B-Spline)
   <rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.204, 0.381, 0.550, 0.755, 1, 1, 1]</rosparam>
-  <rosparam param="weight_vector" > [1, 1, 1, 1, 1, 1, 1]</rosparam>
+  <rosparam param="weight_vector" > [1, 1, 1, 1, 1, 1, 1]</rosparam>-->
   
 
   <!-- Gazebo Environment 
@@ -32,15 +37,15 @@
     <param name="visual2_differential_times" type="int" value="2" /> 
     <param name="basis_index" type="int" value="0" />
     <param name="curvature_u_data" type="double" value="0.0" />
-    <param name="Length_start_u" type="double" value="0.0" />
-    <param name="Length_end_u" type="double" value="1.0" />
-    <param name="Number_of_interval" type="int" value="50000" /> <!-- even number -->
+    <param name="Length_start_u" type="double" value="0.931176" />
+    <param name="Length_end_u" type="double" value="0.931414" />
+    <param name="Number_of_interval" type="int" value="20000" /> <!-- even number -->
   </node>
 
-  <!-- rviz 
+  <!-- rviz -->
   <group if="$(arg use_rviz)"> 
     <node pkg="rviz" type="rviz" name="rviz" required="true"
           args="-d $(find agv_path_smoothing)/rviz/path_viewer_spline.rviz"/>
-  </group>-->
+  </group>
 
 </launch>
