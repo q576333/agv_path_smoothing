@@ -10,13 +10,15 @@ int main(int argc, char **argv)
 
     double t_intervel = 0.01;
 
-    ros::Publisher pub = private_nh.advertise<nav_msgs::Path>("Curve_result", 10);
-    ros::Publisher pub_derivative_curve = private_nh.advertise<nav_msgs::Path>("Derivative_curve_result", 10);
-    ros::Publisher pub_discreate_maker = private_nh.advertise<visualization_msgs::Marker>("Discreate_point_maker", 10);
+    ros::Publisher pub = private_nh.advertise<nav_msgs::Path>("Curve_result", 10, true);
+    ros::Publisher pub_derivative_curve = private_nh.advertise<nav_msgs::Path>("Derivative_curve_result", 10, true);
+    ros::Publisher pub_discreate_maker = private_nh.advertise<visualization_msgs::Marker>("Discreate_point_maker", 10, true);
+    ros::Publisher pub_curve_point_maker = private_nh.advertise<visualization_msgs::Marker>("Curve_point_maker", 10, true);
 
     nav_msgs::Path myCurve;
     nav_msgs::Path derivative_myCurve;
     visualization_msgs::Marker points;
+    visualization_msgs::Marker curve_point;
     std::string frame_id = "odom";
     std::vector<double> input_control_point;
     std::vector<double> input_knot_vector;
@@ -24,6 +26,11 @@ int main(int argc, char **argv)
     Spline_Inf input_spline_inf;
     std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point;
     Eigen::Vector3d eigen_curve_point;
+    Eigen::Vector3d curvature_vector;
+    Eigen::Vector3d curvature_vector_old;
+    double curvature_angle;
+    double curvature_angle_denom;
+    std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > eigen_curve_point_vec;
     int differential_basis1 = 0;
     int differential_basis2 = 0;
     int basis_index = 0;
@@ -59,6 +66,18 @@ int main(int argc, char **argv)
         points.color.r = 1; //red
         points.color.a = 1;
 
+        curve_point.header.frame_id = "odom";
+        curve_point.header.stamp = ros::Time::now();
+        curve_point.ns = "waypoints";
+        curve_point.action = visualization_msgs::Marker::ADD;
+        curve_point.id = 0;
+        curve_point.type = visualization_msgs::Marker::SPHERE_LIST;
+        curve_point.scale.x = 0.1;
+        curve_point.scale.y = 0.1;
+        curve_point.scale.z = 0.1;
+        curve_point.color.b = 1; //blue
+        curve_point.color.a = 1;
+
         //std::cout << "input control point size : " << input_control_point.size() << "\n";
         CurveDesign.ReadDiscreate2DPointFromLaunch(&control_point, input_control_point);
         CurveDesign.ShowDiscreatePoint(&points, control_point);
@@ -78,19 +97,38 @@ int main(int argc, char **argv)
         std::cout << "Curvature radius is : " << CurveDesign.CalculateCurvatureRadius(input_spline_inf, curvature_u_data, true) << "\n";
         std::cout << "Curve total length is : " << CurveDesign.CalculateCurveLength(input_spline_inf, 0.0, 1.0, sub_intervals, true) << "\n";
         
-        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.25, true));
-        std::cout << "Curve point in u = 0.25, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+        // eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.01, true));
+        // std::cout << "Curve point in u = 0.01, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
 
-        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.5, true));
-        std::cout << "Curve point in u = 0.5, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+        
+        for(double u_test = 0; u_test <= 1; u_test += 0.02)
+        {   
+            std::cout << "-------------- u = "<< u_test << "--------------" << "\n";
+            curvature_vector_old = curvature_vector;
+            eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, u_test, true));
+            std::cout << "Curve point x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+            std::cout << "Curvature is : " << CurveDesign.CalculateCurvature(input_spline_inf, u_test, true) << "\n";
 
-        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 0.75, true));
-        std::cout << "Curve point in u = 0.75, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+            curvature_vector = CurveDesign.CalculateCurvatureDirectionVector(input_spline_inf, u_test, true);
+            curvature_angle_denom = curvature_vector_old.lpNorm<2>() * curvature_vector.lpNorm<2>();
+            if(std::isnan(curvature_angle_denom))
+            {
+                std::cout << "this u no curvature angle " << "\n";
+                curvature_angle = 0;
+            }  
+            else
+                curvature_angle = std::acos(curvature_vector_old.dot(curvature_vector) / curvature_angle_denom);
 
-        eigen_curve_point = EigenVecter3dFromPointMsg(CurveDesign.CalculateCurvePoint(&input_spline_inf, 1, true));
-        std::cout << "Curve point in u = 1, x: " << eigen_curve_point(0) << " y: " << eigen_curve_point(1) << "\n";
+            curvature_angle = curvature_angle * 180 / M_PI;
+            std::cout << "Curvature angle is : " << curvature_angle << "\n";
 
-        while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0 && pub_derivative_curve.getNumSubscribers() == 0)
+            eigen_curve_point_vec.push_back(eigen_curve_point);
+            std::cout << "\n";
+        }
+        
+        CurveDesign.ShowDiscreatePoint(&curve_point, eigen_curve_point_vec);
+    
+        while(pub_discreate_maker.getNumSubscribers() == 0 && pub.getNumSubscribers() == 0 && pub_derivative_curve.getNumSubscribers() == 0 && pub_curve_point_maker == 0)
         {
             ROS_INFO("wait for subscriber");
             sleep(1);
@@ -99,6 +137,7 @@ int main(int argc, char **argv)
         pub_discreate_maker.publish(points);
         pub.publish(myCurve);
         pub_derivative_curve.publish(derivative_myCurve);
+        pub_curve_point_maker.publish(curve_point);
         ROS_INFO("end publish");
 
         ros::spin();        

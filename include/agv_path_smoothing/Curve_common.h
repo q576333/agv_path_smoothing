@@ -57,6 +57,7 @@ class Curve_common
         geometry_msgs::Point CalculateDerivativeCurvePoint(Spline_Inf *spline_inf, double u_data, int differential_times, bool UsingNURBS);
         geometry_msgs::Point CalculateCurvePoint(Spline_Inf *spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurvature(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
+        Eigen::Vector3d CalculateCurvatureDirectionVector(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurvatureRadius(Spline_Inf spline_inf, double u_data, bool UsingNURBS);
         double CalculateCurveLength(Spline_Inf spline_inf, double start_u, double end_u, int sub_intervals, bool UsingNURBS);
 

@@ -928,9 +928,44 @@ double Curve_common::CalculateCurvature(Spline_Inf spline_inf, double u_data, bo
     denominator = std::pow(derivative_once_point.lpNorm<2>(), 3);
 
     if(denominator == 0)
-        return curvature = 0;
+        curvature = 0;
     else
-        return curvature = fraction / denominator;
+        curvature = fraction / denominator;
+
+    //TODO: Check curvature direction (but in nurbs planner not useful)
+    // Eigen::Vector3d direction_vector; //curvature direction
+    // direction_vector = derivative_once_point.cross(derivative_twice_point.cross(derivative_once_point));
+    // std::cout << "direction vector x: " << direction_vector(0) << "\n";
+    // std::cout << "direction vector y: " << direction_vector(1) << "\n";
+    // std::cout << "direction vector z: " << direction_vector(2) << "\n";
+    // if(direction_vector(0) < 0 && direction_vector(1) < 0 || direction_vector(0) > 0 && direction_vector(1) < 0)
+    //     curvature *= -1;
+
+    return curvature;
+}
+
+Eigen::Vector3d Curve_common::CalculateCurvatureDirectionVector(Spline_Inf spline_inf, double u_data, bool UsingNURBS)
+{
+    Eigen::Vector3d direction_vector;
+    if(u_data > 1 || u_data < 0)
+    {
+        std::cout << "Error, u_data need between 0 and 1" << "\n";
+        return direction_vector;
+    }
+
+    Eigen::Vector3d derivative_once_point;
+    Eigen::Vector3d derivative_twice_point;
+
+    CalculateDerivativeBasisFunc(&spline_inf, u_data, 2);
+    derivative_once_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 1, UsingNURBS));
+    derivative_twice_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 2, UsingNURBS));
+
+    direction_vector = derivative_once_point.cross(derivative_twice_point.cross(derivative_once_point));
+    std::cout << "direction vector x: " << direction_vector(0) << "\n";
+    std::cout << "direction vector y: " << direction_vector(1) << "\n";
+    std::cout << "direction vector z: " << direction_vector(2) << "\n";
+    
+    return direction_vector;
 }
 
 double Curve_common::CalculateCurvatureRadius(Spline_Inf spline_inf, double u_data, bool UsingNURBS)
