@@ -907,10 +907,17 @@ nav_msgs::Path Curve_common::Generate_DerivativeBasisFuncCurve(Spline_Inf bsplin
 
 double Curve_common::CalculateCurvature(Spline_Inf spline_inf, double u_data, bool UsingNURBS)
 {
-    if(u_data > 1 || u_data < 0)
+    if(u_data < 0)
     {
-        std::cout << "Error, u_data need between 0 and 1" << "\n";
+        std::cout << "Error, u_data need bigger than 0" << "\n";
+        std::cout << "error u_data value is: " << u_data << "\n";
         return 0;
+    }
+
+    if(u_data > 1)
+    {
+        std::cout << "Error!! because u_data bigger than 1, maybe is program numerical error" << "\n";
+        u_data = 1;
     }
 
     Eigen::Vector3d derivative_once_point;
@@ -947,11 +954,19 @@ double Curve_common::CalculateCurvature(Spline_Inf spline_inf, double u_data, bo
 Eigen::Vector3d Curve_common::CalculateCurvatureDirectionVector(Spline_Inf spline_inf, double u_data, bool UsingNURBS)
 {
     Eigen::Vector3d direction_vector;
-    if(u_data > 1 || u_data < 0)
+    if(u_data < 0)
     {
-        std::cout << "Error, u_data need between 0 and 1" << "\n";
+        std::cout << "Error, u_data need bigger than 0" << "\n";
+        std::cout << "error u_data value is: " << u_data << "\n";
         return direction_vector;
     }
+
+    if(u_data > 1)
+    {
+        std::cout << "Error!! because u_data bigger than 1, maybe is program numerical error" << "\n";
+        u_data = 1;
+    }
+        
 
     Eigen::Vector3d derivative_once_point;
     Eigen::Vector3d derivative_twice_point;
@@ -961,9 +976,9 @@ Eigen::Vector3d Curve_common::CalculateCurvatureDirectionVector(Spline_Inf splin
     derivative_twice_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 2, UsingNURBS));
 
     direction_vector = derivative_once_point.cross(derivative_twice_point.cross(derivative_once_point));
-    std::cout << "direction vector x: " << direction_vector(0) << "\n";
-    std::cout << "direction vector y: " << direction_vector(1) << "\n";
-    std::cout << "direction vector z: " << direction_vector(2) << "\n";
+    // std::cout << "direction vector x: " << direction_vector(0) << "\n";
+    // std::cout << "direction vector y: " << direction_vector(1) << "\n";
+    // std::cout << "direction vector z: " << direction_vector(2) << "\n";
     
     return direction_vector;
 }

@@ -1,5 +1,5 @@
 <launch>
-  <arg name="use_rviz" default="false"/>
+  <arg name="use_rviz" default="true"/>
 
   <!--
   <rosparam param="control_point" > [3, 2, 4.792, 1.37, 6.963, 3.945, 10.837, 8.657, 7.546, 6.879, 0.357, 0.477, 0, 0]</rosparam>
@@ -16,20 +16,25 @@
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
-  <!-- For test NURBS splineinf (Circle, r = 4) inverse
+  <!-- For test NURBS splineinf (Circle, r = 2) inverse
   <rosparam param="control_point" > [0, 0, 0, 2, 4, 2, 4, 0, 4, -2, 0, -2, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
-  <!-- For test NURBS splineinf (Circle, r = 4) -->
+  <!-- For test NURBS splineinf (Circle, r = 2) -->
   <rosparam param="control_point" > [0, 0, 0, -2, 4, -2, 4, 0, 4, 2, 0, 2, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>
 
-  <!-- For test NURBS splineinf (S shape circle, r = 4) 
-  <rosparam param="control_point" > [0, 0, 0, 2, 4, 2, 4, 0, 4, -2, 6, -2, 8, -2, 8, 0]</rosparam>
-  <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.7, 0.8, 1, 1, 1]</rosparam>
-  <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 1, 0.5, 1]</rosparam>-->
+  <!-- For test NURBS splineinf (S shape circle, r = 2) 
+  <rosparam param="control_point" > [0, 0, 0, 2, 4, 2, 4, 0, 4, -2, 8, -2, 8, 0]</rosparam>
+  <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
+  <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
+
+  <!-- For test NURBS splineinf (S shape circle, r = 1) 
+  <rosparam param="control_point" > [0, 1, 0, 2, -2, 2, -2, 1, -2, 0, -4,  0, -4, 1]</rosparam>
+  <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
+  <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
   <!-- For test NURBS splineinf (B-Spline)
   <rosparam param="control_point" > [3, 2, 6, -2, 6.963, 3.945, 10.837, 8.657, 5.546, 8.879, 2.357, 6.477, 0, 0]</rosparam>
@@ -37,9 +42,9 @@
   <rosparam param="weight_vector" > [1, 1, 1, 1, 1, 1, 1]</rosparam>-->
   
 
-  <!-- Gazebo Environment 
+  <!-- Gazebo Environment -->
   <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch">
-  </include>-->
+  </include>
 
   <!-- path viewer -->
   <node pkg="agv_path_smoothing" name="path_viewer_spline" type="path_viewer_spline" output="screen">
