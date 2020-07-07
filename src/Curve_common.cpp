@@ -165,6 +165,33 @@ visualization_msgs::Marker Curve_common::ShowDiscreatePoint(std::vector<Eigen::V
     return waypoints_marker;
 }
 
+visualization_msgs::Marker Curve_common::ShowDiscreatePoint2(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, std_msgs::ColorRGBA point_color, const std::string& name, double scale)
+{
+    visualization_msgs::Marker waypoints_marker;
+
+    waypoints_marker.header.frame_id = frame_id;
+    waypoints_marker.header.stamp = ros::Time::now();
+    waypoints_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    waypoints_marker.color = point_color;
+    waypoints_marker.color.a = 0.75;
+    waypoints_marker.ns = name;
+    waypoints_marker.scale.x = scale;
+    waypoints_marker.scale.y = scale;
+    waypoints_marker.scale.z = scale;
+
+    waypoints_marker.points.reserve(discreate_point.size());
+
+    geometry_msgs::Point view_point;
+    for(int i = 0; i < discreate_point.size(); i++)
+    {
+        view_point.x = discreate_point.at(i)(0);
+        view_point.y = discreate_point.at(i)(1);
+        waypoints_marker.points.push_back(view_point);
+    }
+
+    return waypoints_marker;
+}
+
 visualization_msgs::Marker Curve_common::ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale) 
 {
     visualization_msgs::Marker waypoints_marker;
@@ -175,6 +202,36 @@ visualization_msgs::Marker Curve_common::ShowDiscreatePoint(EigenTrajectoryPoint
     //waypoints_marker.color = color;
     waypoints_marker.color.r = 1;
     waypoints_marker.color.g = 1;
+    waypoints_marker.color.a = 0.75;
+    waypoints_marker.ns = name;
+    waypoints_marker.scale.x = scale;
+    waypoints_marker.scale.y = scale;
+    waypoints_marker.scale.z = scale;
+
+    waypoints_marker.points.reserve(discreate_point.size());
+
+    geometry_msgs::Point view_point;
+    for(int i = 0; i < discreate_point.size(); i++)
+    {
+        view_point.x = discreate_point.at(i).position(0);
+        view_point.y = discreate_point.at(i).position(1);
+        waypoints_marker.points.push_back(view_point);
+    }
+
+    return waypoints_marker;
+}
+
+visualization_msgs::Marker Curve_common::ShowDiscreatePoint2(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, std_msgs::ColorRGBA point_color, const std::string& name, double scale)
+{
+    visualization_msgs::Marker waypoints_marker;
+
+    waypoints_marker.header.frame_id = frame_id;
+    waypoints_marker.header.stamp = ros::Time::now();
+    waypoints_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+    waypoints_marker.color = point_color;
+    // waypoints_marker.color.r = r;
+    // waypoints_marker.color.g = g;
+    // waypoints_marker.color.b = b;
     waypoints_marker.color.a = 0.75;
     waypoints_marker.ns = name;
     waypoints_marker.scale.x = scale;
@@ -236,14 +293,37 @@ void Curve_common::ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector
     // }
 }
 
-void Curve_common::ReadSplineInf(Spline_Inf *spline_inf, std::vector<double> weight_vector)
+void Curve_common::ReadSplineInf(Spline_Inf *spline_inf, std::vector<double> weight_vector, bool use_limit_derivative_fitting)
 {
-    if(spline_inf->control_point.size() != weight_vector.size())
+    if(!use_limit_derivative_fitting)
     {
-        std::cout << "weight vector size is wrong" << "\n";
-        return;
+        if(spline_inf->control_point.size() != weight_vector.size())
+        {
+            std::cout << "weight vector size is wrong" << "\n";
+            return;
+        }
     }
+    else
+    {
+        for(int i = 0; i < 2; i++)
+            weight_vector.push_back(1);
+    }
+
     spline_inf->weight.assign(weight_vector.begin(), weight_vector.end());
+    
+
+    //Debug use
+    // std::cout << "knot vector size : " << spline_inf->knot_vector.size() << "\n";
+    // for(int i = 0; i < spline_inf->knot_vector.size(); i++)
+    // {
+    //     std::cout << "knot vector x : " << spline_inf->knot_vector.at(i) << "\n";    
+    // }
+
+    // std::cout << "control point size : " << spline_inf->control_point.size() << "\n";
+    // for(int i = 0; i < spline_inf->control_point.size(); i++)
+    // {
+    //     std::cout << "control point x : " << spline_inf->control_point.at(i)(0) << ", y = " << spline_inf->control_point.at(i)(1) << "\n";
+    // }
 }
 
 nav_msgs::Path Curve_common::Generate_BsplineCurve(Spline_Inf bspline_inf, double t_intervel, std::string frame_id)

@@ -97,7 +97,7 @@ int main(int argc, char **argv)
         //myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);
 
         //test NURBS curve
-        CurveDesign.ReadSplineInf(&input_spline_inf, weight_vector);
+        CurveDesign.ReadSplineInf(&input_spline_inf, weight_vector, false);
         myCurve = CurveDesign.Generate_NURBSCurve(input_spline_inf, t_intervel, frame_id);
         //derivative_myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis1, basis_index, t_intervel, frame_id);
         //myCurve = CurveDesign.Generate_DerivativeBasisFuncCurve(input_spline_inf, differential_basis2, basis_index, t_intervel, frame_id);

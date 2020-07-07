@@ -10,6 +10,7 @@
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
+#include "agv_path_smoothing/color.h"
 
 struct Spline_Inf
 {
@@ -62,14 +63,18 @@ class Curve_common
         double CalculateCurveLength(Spline_Inf spline_inf, double start_u, double end_u, int sub_intervals, bool UsingNURBS);
 
         void ReadSplineInf(Spline_Inf *bspline_inf, int order, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > control_point, std::vector<double> knot_vector);
-        void ReadSplineInf(Spline_Inf *bspline_inf, std::vector<double> weight_vector);
+        void ReadSplineInf(Spline_Inf *bspline_inf, std::vector<double> weight_vector, bool use_limit_derivative_fitting);
         void ReadDiscreate2DPointFromLaunch(EigenTrajectoryPoint::Vector *input_point, std::vector<double> file_discreate_point);
         void ReadDiscreate2DPointFromLaunch(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > *input_point, std::vector<double> file_discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, EigenTrajectoryPoint::Vector discreate_point);
         void ShowDiscreatePoint(visualization_msgs::Marker *points, std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point);
 
+        //TODO: move relate visualize function to new vislization.h 
+        int print();
         visualization_msgs::Marker ShowDiscreatePoint(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, const std::string& name, double scale);
+        visualization_msgs::Marker ShowDiscreatePoint2(EigenTrajectoryPoint::Vector& discreate_point, const std::string& frame_id, std_msgs::ColorRGBA point_color, const std::string& name, double scale);
         visualization_msgs::Marker ShowDiscreatePoint(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, const std::string& name, double scale);
+        visualization_msgs::Marker ShowDiscreatePoint2(std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > discreate_point, const std::string& frame_id, std_msgs::ColorRGBA point_color, const std::string& name, double scale);
     private:
         
         
