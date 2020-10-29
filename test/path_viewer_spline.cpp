@@ -46,6 +46,7 @@ int main(int argc, char **argv)
     double start_u = 0;
     double end_u = 0;
     int sub_intervals = 0;
+    double curvature = 0;
 
     Curve_common CurveDesign;
 
@@ -144,6 +145,11 @@ int main(int argc, char **argv)
 
             curvature_angle = curvature_angle * 180 / M_PI;
             std::cout << "Curvature angle is : " << curvature_angle << "\n";
+
+            curvature = CurveDesign.CalculateCurvature(input_spline_inf, u_test, true);
+            if(curvature_vector(0) < 0 && curvature_vector(1) < 0 || curvature_vector(0) > 0 && curvature_vector(1) < 0)
+                 curvature *= -1;
+            std::cout << "Curvature is : " << curvature << "\n";
 
             eigen_curve_point_vec.push_back(eigen_curve_point);
             std::cout << "\n";
