@@ -21,10 +21,10 @@
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
-  <!-- For test NURBS splineinf (Circle, r = 2) -->
+  <!-- For test NURBS splineinf (Circle, r = 2) 
   <rosparam param="control_point" > [0, 0, 0, -2, 4, -2, 4, 0, 4, 2, 0, 2, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
-  <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>
+  <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
   <!-- For test NURBS splineinf (S shape circle, r = 2) 
   <rosparam param="control_point" > [0, 0, 0, 2, 4, 2, 4, 0, 4, -2, 8, -2, 8, 0]</rosparam>
@@ -36,10 +36,10 @@
   <rosparam param="knot_vector" > [0, 0, 0, 0.25, 0.5, 0.5, 0.75, 1, 1, 1]</rosparam>
   <rosparam param="weight_vector" > [1, 0.5, 0.5, 1, 0.5, 0.5, 1]</rosparam>-->
 
-  <!-- For test NURBS splineinf (B-Spline)
+  <!-- For test NURBS splineinf (B-Spline)-->
   <rosparam param="control_point" > [3, 2, 6, -2, 6.963, 3.945, 10.837, 8.657, 5.546, 8.879, 2.357, 6.477, 0, 0]</rosparam>
   <rosparam param="knot_vector" > [0, 0, 0, 0.204, 0.381, 0.550, 0.755, 1, 1, 1]</rosparam>
-  <rosparam param="weight_vector" > [1, 1, 1, 1, 1, 1, 1]</rosparam>-->
+  <rosparam param="weight_vector" > [1, 1, 1, 1, 1, 1, 1]</rosparam>
   
 
   <!-- Gazebo Environment -->

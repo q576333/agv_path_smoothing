@@ -19,7 +19,7 @@ find_package(Eigen3 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp std_msgs
+  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp 
 #  DEPENDS system_lib
 )
 
@@ -59,3 +59,6 @@ install(TARGETS ${PROJECT_NAME}
 
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+MESSAGE(STATUS "This is include dir: " ${catkin_INCLUDE_DIRS})
+MESSAGE(STATUS "This is catkin library: " ${catkin_LIBRARIES})

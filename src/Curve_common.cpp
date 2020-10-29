@@ -1031,6 +1031,52 @@ double Curve_common::CalculateCurvature(Spline_Inf spline_inf, double u_data, bo
     return curvature;
 }
 
+double Curve_common::CalculateSignedCurvature(Spline_Inf spline_inf, double u_data, bool UsingNURBS)
+{
+    if(u_data < 0)
+    {
+        std::cout << "Error, u_data need bigger than 0" << "\n";
+        std::cout << "error u_data value is: " << u_data << "\n";
+        return 0;
+    }
+
+    if(u_data > 1)
+    {
+        std::cout << "Error!! because u_data bigger than 1, maybe is program numerical error" << "\n";
+        u_data = 1;
+    }
+
+    Eigen::Vector3d derivative_once_point;
+    Eigen::Vector3d derivative_twice_point;
+
+    double curvature = 0;
+    double fraction = 0;
+    double denominator = 0;
+
+    CalculateDerivativeBasisFunc(&spline_inf, u_data, 2);
+    derivative_once_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 1, UsingNURBS));
+    derivative_twice_point = EigenVecter3dFromPointMsg(CalculateDerivativeCurvePoint(&spline_inf, u_data, 2, UsingNURBS));
+    
+    fraction = derivative_once_point.cross(derivative_twice_point).lpNorm<2>();
+    denominator = std::pow(derivative_once_point.lpNorm<2>(), 3);
+
+    if(denominator == 0)
+        curvature = 0;
+    else
+        curvature = fraction / denominator;
+
+    //TODO: Check curvature direction (but in nurbs planner not useful)
+    Eigen::Vector3d direction_vector; //curvature direction
+    direction_vector = derivative_once_point.cross(derivative_twice_point.cross(derivative_once_point));
+    // std::cout << "direction vector x: " << direction_vector(0) << "\n";
+    // std::cout << "direction vector y: " << direction_vector(1) << "\n";
+    // std::cout << "direction vector z: " << direction_vector(2) << "\n";
+    if(direction_vector(0) < 0 && direction_vector(1) < 0 || direction_vector(0) > 0 && direction_vector(1) < 0)
+        curvature *= -1;
+
+    return curvature;
+}
+
 Eigen::Vector3d Curve_common::CalculateCurvatureDirectionVector(Spline_Inf spline_inf, double u_data, bool UsingNURBS)
 {
     Eigen::Vector3d direction_vector;
