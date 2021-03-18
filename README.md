@@ -22,6 +22,7 @@ sudo apt-get install libeigen3-dev
 ```
 Next, clone this repository to your catkin workspace and catkin build this package.
 ```shell
+cd ~/catkin_ws/src
 glt clone https://github.com/q576333/agv_path_smoothing
 catkin build
 ```
@@ -49,6 +50,7 @@ Running
 ```shell
 roslaunch agv_path_smoothing fitting_test.launch
 ```
+![image](docs/fitting.png)
 
 # Reference 
 * "The NURBS Book" Les Piegl and Wayne Tiller, 2nd edn., Springer, 1997.
